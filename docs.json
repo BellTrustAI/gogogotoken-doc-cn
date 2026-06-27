@@ -9,11 +9,11 @@
     "dark": "#166E3F"
   },
   "logo": {
-    "light": "/favicon.svg",
-    "dark": "/favicon.svg",
+    "light": "/logo/gogogotoken-logo.png",
+    "dark": "/logo/gogogotoken-logo.png",
     "href": "https://gogogotoken.com"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "redirects": [
     {
       "source": "/gogogotokenzh/:slug*",
