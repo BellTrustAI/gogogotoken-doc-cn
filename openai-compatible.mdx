@@ -1,0 +1,53 @@
+---
+title: "OpenAI 兼容视频接口"
+sidebarTitle: "OpenAI 视频"
+description: "兼容 OpenAI Video API 格式的视频提交与查询接口"
+icon: "braces"
+api: "POST https://gogogotoken.com/v1/videos"
+---
+
+OpenAI 兼容视频接口与 `/v1/video/generations` 行为一致，便于迁移使用 OpenAI Video API 格式的客户端。
+
+<RequestExample>
+```bash 提交任务
+curl -X POST https://gogogotoken.com/v1/videos \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0-fast",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "duration": 5
+  }'
+```
+
+```bash 查询任务
+curl https://gogogotoken.com/v1/videos/task_1234567890 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 提交成功
+{
+  "id": "task_1234567890",
+  "status": "queued",
+  "model": "doubao-seedance-2-0-fast"
+}
+```
+</ResponseExample>
+
+参数和响应格式与 `GET /v1/video/generations/{task_id}` 相同。
+
+## 请求体
+
+<ParamField body="model" type="string" required default="doubao-seedance-2-0-fast">
+  视频模型 ID。
+</ParamField>
+
+<ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
+  视频描述。
+</ParamField>
+
+<ParamField body="duration" type="number" default={5}>
+  视频时长。
+</ParamField>

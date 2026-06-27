@@ -1,0 +1,132 @@
+---
+title: "素材管理 API"
+sidebarTitle: "素材管理"
+description: "Seedance 原生素材接口：创建组、上传、查询与列表（gogogotoken.com）"
+icon: "folder-kanban"
+api: "POST /v1/seedance/asset/CreateAssetGroup"
+---
+
+Seedance 素材管理共 **8 个端点**，均为 **POST** 请求。不同 API Key 之间的素材数据完全隔离。
+
+<Note>
+  Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
+</Note>
+
+也可在控制台 **素材管理** 中查看素材组、复制 `asset://` 链接、解绑组。
+
+<RequestExample>
+
+```bash 创建素材组
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Name": "我的素材组" }'
+```
+
+```bash 上传素材
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "GroupId": "group_xxx",
+    "Name": "参考图1",
+    "AssetType": "Image",
+    "URL": "https://assets.example.com/photo.jpg"
+  }'
+```
+
+```bash 分页列出素材
+curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Filter": {
+      "GroupIds": ["group_xxx"],
+      "GroupType": "AIGC"
+    },
+    "PageNumber": 1,
+    "PageSize": 20
+  }'
+```
+
+</RequestExample>
+
+## 接口列表
+
+| 接口 | 端点 | 说明 |
+| --- | --- | --- |
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组 |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（按次少量计费） |
+| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
+| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
+| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
+| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
+| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
+| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
+
+## CreateAssetGroup
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Name": "我的素材组" }'
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `Name` | string | 是 | 素材组名称 |
+| `Description` | string | 否 | 描述 |
+
+## CreateAsset
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `GroupId` | string | 是 | 所属素材组 ID |
+| `Name` | string | 是 | 素材名称 |
+| `AssetType` | string | 是 | `Image` 或 `Video` |
+| `URL` | string | 是 | 公网 HTTPS 图片/视频地址（不支持本地文件、base64） |
+
+## GetAsset
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Id": "asset_xxx" }'
+```
+
+## ListAssets
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `Filter.GroupIds` | string[] | 是 | 素材组 ID 列表 |
+| `Filter.GroupType` | string | 是 | 素材组类型，常用 `AIGC` |
+| `PageNumber` | number | 否 | 页码，从 1 开始 |
+| `PageSize` | number | 否 | 每页数量，默认 20 |
+
+## 在图生视频中引用
+
+登记成功后，在 [视频生成](/video-generations) 的 `metadata.content` 中使用：
+
+```json
+{
+  "type": "image_url",
+  "image_url": { "url": "asset://asset_xxx" },
+  "role": "first_frame"
+}
+```
+
+## 常见问题
+
+**上传报 URL 无效？**
+
+换一张能公网直接打开的 `https` 链接。
+
+**asset:// 图生报找不到素材？**
+
+确认 asset 属于当前 Key；素材组未解绑；且与推理 endpoint 在同一 BytePlus 项目。可先改用公网图片链接。
+
+**字段名写错？**
+
+使用 `GroupId`、`Id`、`PageNumber`，不是 `group_id`、`GroupID`、`Page`。

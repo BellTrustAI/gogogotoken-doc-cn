@@ -1,0 +1,109 @@
+---
+title: "Kling 兼容接口"
+sidebarTitle: "Kling 兼容"
+description: "兼容 Kling API 格式的文生视频与图生视频接口"
+icon: "plug"
+api: "POST https://gogogotoken.com/kling/v1/videos/text2video"
+---
+
+Kling 兼容接口会将请求转换为 Seedance 2.0 视频生成格式。查询返回格式与通用视频接口一致。
+
+<RequestExample>
+```bash 文生视频
+curl -X POST https://gogogotoken.com/kling/v1/videos/text2video \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "doubao-seedance-2-0-fast-480p",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "cfg_scale": 0.5
+  }'
+```
+
+```bash 图生视频
+curl -X POST https://gogogotoken.com/kling/v1/videos/image2video \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "doubao-seedance-2-0-fast-720p",
+    "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
+    "image": "https://assets.example.com/product-watch.jpg"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "task_1234567890",
+  "task_id": "task_1234567890",
+  "status": "queued"
+}
+```
+</ResponseExample>
+
+## 文生视频
+
+```http
+POST /kling/v1/videos/text2video
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `model_name` | string | 是 | 模型名称，也支持 `model` 字段 |
+| `prompt` | string | 是 | 视频描述 |
+| `duration` | number | 否 | 视频时长 |
+| `cfg_scale` | number | 否 | 提示词相关性 |
+
+## 查询文生视频任务
+
+```http
+GET /kling/v1/videos/text2video/{task_id}
+```
+
+## 图生视频
+
+```http
+POST /kling/v1/videos/image2video
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `model_name` | string | 是 | 模型名称，也支持 `model` 字段 |
+| `prompt` | string | 是 | 视频描述 |
+| `image` | string | 是 | 首帧图片 URL |
+| `duration` | number | 否 | 视频时长 |
+
+## 查询图生视频任务
+
+```http
+GET /kling/v1/videos/image2video/{task_id}
+```
+
+## 请求头
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  固定为 `application/json`。
+</ParamField>
+
+## 请求体
+
+<ParamField body="model_name" type="string" required default="doubao-seedance-2-0-fast-480p">
+  Kling 兼容模型名称，也支持传 `model` 字段。
+</ParamField>
+
+<ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
+  视频描述。
+</ParamField>
+
+<ParamField body="image" type="string">
+  图生视频的首帧图片 URL。
+</ParamField>
+
+<ParamField body="duration" type="number" default={5}>
+  视频时长。
+</ParamField>

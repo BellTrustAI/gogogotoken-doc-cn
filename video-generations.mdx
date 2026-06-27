@@ -1,0 +1,196 @@
+---
+title: "视频生成"
+sidebarTitle: "文生与图生视频"
+description: "提交 Seedance 2.0 文生视频和图生视频任务"
+icon: "video"
+api: "POST https://gogogotoken.com/v1/video/generations"
+---
+
+视频生成是异步任务。提交后接口会立即返回 `task_id`，需要通过任务查询接口轮询获取结果。
+
+<RequestExample>
+```bash 文生视频
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0-fast",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "seconds": "5",
+    "size": "480x854"
+  }'
+```
+
+```bash 图生视频
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0",
+    "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
+    "images": ["https://assets.example.com/product-watch.jpg"],
+    "seconds": "5",
+    "size": "720x1280"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "task_1234567890",
+  "task_id": "task_1234567890",
+  "status": "queued",
+  "model": "doubao-seedance-2-0-fast"
+}
+```
+
+```json 402
+{
+  "error": {
+    "message": "Insufficient balance",
+    "code": "insufficient_quota"
+  }
+}
+```
+</ResponseExample>
+
+## 接口说明
+
+<Note>
+  通常需要 30-120 秒生成完成。建议每 5-8 秒轮询一次。
+</Note>
+
+## 文生视频
+
+```bash
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0-fast",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "seconds": "5",
+    "size": "480x854"
+  }'
+```
+
+## 图生视频
+
+基础模式传入 `images` 作为首帧或参考图片。
+
+```bash
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0",
+    "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
+    "images": ["https://assets.example.com/product-watch.jpg"],
+    "seconds": "5",
+    "size": "720x1280"
+  }'
+```
+
+高级模式可以通过 `metadata.content[]` 指定首帧图片和参考视频。
+
+```bash
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0",
+    "prompt": "让产品在展示台上缓慢旋转，背景保持简洁，画面稳定且突出品牌质感",
+    "images": ["https://assets.example.com/product-watch.jpg"],
+    "seconds": "6",
+    "size": "1080x1920",
+    "metadata": {
+      "content": [
+        {
+          "type": "image_url",
+          "image_url": { "url": "https://assets.example.com/product-watch.jpg" },
+          "role": "first_frame"
+        },
+        {
+          "type": "video_url",
+          "video_url": { "url": "https://assets.example.com/reference-motion.mp4" }
+        }
+      ]
+    }
+  }'
+```
+
+## 提交响应
+
+```json
+{
+  "id": "task_1234567890",
+  "task_id": "task_1234567890",
+  "status": "queued",
+  "model": "doubao-seedance-2-0-fast"
+}
+```
+
+## 参数说明
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  固定为 `application/json`。
+</ParamField>
+
+<ParamField body="model" type="string" required default="doubao-seedance-2-0-fast">
+  视频模型 ID，支持 `doubao-seedance-2-0` 或 `doubao-seedance-2-0-fast`。
+</ParamField>
+
+<ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
+  视频描述文本。
+</ParamField>
+
+<ParamField body="seconds" type="string" default="5">
+  视频时长，示例为 `"5"`。
+</ParamField>
+
+<ParamField body="duration" type="number">
+  兼容字段，部分兼容接口使用该字段表达时长。
+</ParamField>
+
+<ParamField body="size" type="string" default="480x854">
+  分辨率或宽高，如 `1080x1920`、`720x1280`、`480x854`。
+</ParamField>
+
+<ParamField body="images" type="string[]">
+  参考图片 URL 列表，图生视频时使用。
+</ParamField>
+
+<ParamField body="first_frame_image" type="string">
+  首帧图片 Base64。
+</ParamField>
+
+<ParamField body="last_frame_image" type="string">
+  尾帧图片 Base64。
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  扩展参数，可包含 `content`、`resolution`、`ratio`、`frames`、`seed` 等。
+</ParamField>
+
+## 响应体
+
+<ResponseField name="id" type="string">
+  视频生成任务 ID。
+</ResponseField>
+
+<ResponseField name="task_id" type="string">
+  视频生成任务 ID。部分响应会同时返回 `id` 与 `task_id`。
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  任务状态，例如 `queued`。
+</ResponseField>
+
+<ResponseField name="model" type="string">
+  本次任务使用的模型 ID。
+</ResponseField>

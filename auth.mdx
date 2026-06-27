@@ -1,0 +1,31 @@
+---
+title: "认证说明"
+sidebarTitle: "认证说明"
+description: "gogogotoken.com API 的 Base URL 与 Bearer Token 鉴权方式"
+icon: "shield-check"
+---
+
+所有 API 请求均通过 Bearer Token 鉴权。
+
+## Base URL
+
+| 环境 | 地址 |
+| --- | --- |
+| 生产 | `https://gogogotoken.com` |
+
+## 请求头
+
+```http
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+## 获取 API Key
+
+1. 注册并登录 [gogogotoken.com](https://gogogotoken.com)
+2. 进入控制台的 API Keys 页面
+3. 创建 Key，按需设置分组、模型限制与配额
+
+<Warning>
+  请妥善保管 API Key，不要提交到公开仓库、前端代码或日志系统中。
+</Warning>

@@ -1,0 +1,98 @@
+---
+title: "Jimeng 即梦兼容接口"
+sidebarTitle: "Jimeng 即梦"
+description: "兼容 Jimeng 即梦官方 API 的任务提交与查询接口"
+icon: "sparkles"
+api: "POST https://gogogotoken.com/jimeng/?Action=CVSync2AsyncSubmitTask"
+---
+
+Jimeng 即梦兼容接口通过 `?Action=` 查询参数区分操作，请求会转换为 Seedance 2.0 视频生成格式。
+
+<RequestExample>
+```bash 提交任务
+curl -X POST "https://gogogotoken.com/jimeng/?Action=CVSync2AsyncSubmitTask" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "req_key": "doubao-seedance-2-0-fast-480p",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "duration": 5
+  }'
+```
+
+```bash 查询结果
+curl -X POST "https://gogogotoken.com/jimeng/?Action=CVSync2AsyncGetResult" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "req_key": "doubao-seedance-2-0-fast-480p",
+    "task_id": "task_1234567890"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "task_1234567890",
+  "task_id": "task_1234567890",
+  "status": "queued"
+}
+```
+</ResponseExample>
+
+## 提交任务
+
+```http
+POST /jimeng/?Action=CVSync2AsyncSubmitTask
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `req_key` | string | 是 | 模型标识，即 Seedance 模型名 |
+| `prompt` | string | 是 | 生成描述 |
+| `duration` | number | 否 | 视频时长 |
+| `image` | string | 否 | 参考图片 URL，图生视频时使用 |
+
+## 查询结果
+
+```http
+POST /jimeng/?Action=CVSync2AsyncGetResult
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `req_key` | string | 是 | 模型标识 |
+| `task_id` | string | 是 | 任务 ID |
+
+## 请求头
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  固定为 `application/json`。
+</ParamField>
+
+## 请求体
+
+<ParamField body="req_key" type="string" required default="doubao-seedance-2-0-fast-480p">
+  模型标识，即 Seedance 模型名。
+</ParamField>
+
+<ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
+  生成描述。提交任务时必填。
+</ParamField>
+
+<ParamField body="duration" type="number" default={5}>
+  视频时长。
+</ParamField>
+
+<ParamField body="image" type="string">
+  参考图片 URL，图生视频时使用。
+</ParamField>
+
+<ParamField body="task_id" type="string">
+  查询结果时必填的任务 ID。
+</ParamField>

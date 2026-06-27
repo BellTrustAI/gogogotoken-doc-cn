@@ -1,73 +1,40 @@
 ---
-title: "GogoToken 平台简介 — 支持 Claude、GPT 的 OpenAI 兼容 AI API 中转服务"
+title: "简介"
 sidebarTitle: "简介"
-description: "GogoToken 是专为极客打造的 AI API 中转平台，完全兼容 OpenAI SDK，支持 Claude Opus 4.8、Claude Sonnet 4.6、GPT-5.5、GPT-4o，无月费按量计费，修改 baseURL 即可无缝切换，余额永不过期。"
+description: "gogogotoken.com 国内站 API 文档入口"
+icon: "book-open"
 ---
 
-GogoToken 是为极客打造的 AI API 补给站——无月费、无订阅，按量计费，只需将 `baseURL` 改为 `https://gogotoken.org/v1`，即可通过任何 OpenAI 兼容 SDK 接入 Claude Opus 4.8、GPT-5.5 等顶尖大模型。
+**gogogotoken.com** 国内站文档提供基于豆包 Seedance 2.0 / Seedream 模型的 AI 图像与视频生成 API，并兼容 OpenAI Video、Kling、Jimeng 即梦接口格式。
 
-## 核心优势
+<Note>
+  所有接口统一使用 `https://gogogotoken.com` 作为 Base URL，并通过 Bearer Token 鉴权。
+</Note>
+
+## 能力概览
 
 <CardGroup cols={2}>
-  <Card title="OpenAI 完全兼容" icon="plug">
-    只改一行 `baseURL`，现有代码无需任何改动，即可从 OpenAI 切换到 GogoToken。
+  <Card title="图片生成" icon="image" href="/images">
+    通过 OpenAI Images 兼容格式调用 Seedream 4.0 / 4.5 / 5.0 文生图模型。
   </Card>
-  <Card title="按量计费" icon="coins">
-    无月费，无订阅套路。充值余额，用多少扣多少，余额永不过期，不用可退。
+  <Card title="视频生成" icon="video" href="/video-generations">
+    提交 Seedance 2.0 文生视频、图生视频任务，并通过 task_id 轮询结果。
   </Card>
-  <Card title="顶尖模型阵容" icon="microchip">
-    Claude Opus 4.8、Claude Sonnet 4.6、GPT-5.5、GPT-4o，持续接入最新模型。
+  <Card title="素材管理" icon="folder-kanban" href="/assets">
+    使用 Seedance 原生素材接口创建、上传、查询、分页列出和更新素材。
   </Card>
-  <Card title="稳定优先" icon="shield-check">
-    不以价格竞争，专注稳定性。已上线模型保证高可用，专业运维保障。
+  <Card title="兼容接口" icon="plug" href="/openai-compatible">
+    兼容 OpenAI Video、Kling 和 Jimeng 即梦请求格式，便于迁移现有客户端。
   </Card>
 </CardGroup>
 
 ## 快速接入
 
-只需三步，即可将 GogoToken 接入你的应用：
+1. 获取 API Key
+2. 将 Base URL 指向 `https://gogogotoken.com`
+3. 使用 `Authorization: Bearer YOUR_API_KEY` 调用接口
 
-<Steps>
-  <Step title="注册并充值">
-    访问 [gogotoken.org/register](https://gogotoken.org/register) 完成注册（邀请制，按节奏开放），然后在控制台充值余额。
-  </Step>
-  <Step title="创建 API 密钥">
-    在控制台的密钥管理页面生成你的专属 API Key，妥善保存（仅显示一次）。
-  </Step>
-  <Step title="修改 baseURL，立即调用">
-    将你代码中的 `baseURL` 改为 `https://gogotoken.org/v1`，其余参数保持不变。
-  </Step>
-</Steps>
-
-```javascript
-import OpenAI from 'openai';
-
-const client = new OpenAI({
-  apiKey: 'your-gogotoken-api-key',
-  baseURL: 'https://gogotoken.org/v1', // 只需改这一行
-});
-
-const response = await client.chat.completions.create({
-  model: 'claude-opus-4-8',
-  messages: [{ role: 'user', content: '你好！' }],
-});
-
-console.log(response.choices[0].message.content);
+```http
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
 ```
-
-## 探索文档
-
-<CardGroup cols={2}>
-  <Card title="快速开始" icon="rocket" href="/quickstart">
-    5 分钟内完成注册并发出第一个 AI 请求
-  </Card>
-  <Card title="支持的模型" icon="stars" href="/concepts/models">
-    查看所有在线模型的能力与适用场景
-  </Card>
-  <Card title="计费规则" icon="receipt" href="/concepts/billing">
-    了解按量计费、充值与退款政策
-  </Card>
-  <Card title="API 参考" icon="code" href="/api/overview">
-    完整的接口文档、参数说明与响应格式
-  </Card>
-</CardGroup>

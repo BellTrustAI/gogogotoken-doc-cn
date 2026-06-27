@@ -1,94 +1,98 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "luma",
-  "name": "GogoToken",
+  "theme": "almond",
+  "name": "gogogotokenzh",
+  "description": "gogogotoken.com — 国内站 Seedance / Seedream API 使用指南",
   "colors": {
-    "primary": "#84CC16",
-    "light": "#BEF264",
-    "dark": "#4D7C0F"
+    "primary": "#166E3F",
+    "light": "#26BD6C",
+    "dark": "#166E3F"
   },
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "使用文档",
-        "groups": [
-          {
-            "group": "快速开始",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "authentication"
-            ]
-          },
-          {
-            "group": "核心概念",
-            "pages": [
-              "concepts/models",
-              "concepts/billing",
-              "concepts/rate-limits"
-            ]
-          },
-          {
-            "group": "接入指南",
-            "pages": [
-              "guides/openai-sdk",
-              "guides/python",
-              "guides/curl",
-              "guides/third-party-apps"
-            ]
-          },
-          {
-            "group": "账户管理",
-            "pages": [
-              "account/registration",
-              "account/balance",
-              "account/api-keys"
-            ]
-          },
-          {
-            "group": "帮助与支持",
-            "pages": [
-              "support/faq",
-              "support/troubleshooting"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API 参考",
-        "groups": [
-          {
-            "group": "概览",
-            "pages": [
-              "api/overview",
-              "api/authentication"
-            ]
-          },
-          {
-            "group": "接口端点",
-            "pages": [
-              "api/chat-completions",
-              "api/models"
-            ]
-          }
-        ]
-      }
-    ]
+  "logo": {
+    "light": "/favicon.svg",
+    "dark": "/favicon.svg",
+    "href": "https://gogogotoken.com"
   },
+  "favicon": "/favicon.svg",
+  "redirects": [
+    {
+      "source": "/gogogotokenzh/:slug*",
+      "destination": "/introduction"
+    }
+  ],
   "navbar": {
     "links": [
       {
-        "label": "控制台",
-        "href": "https://gogotoken.org/register"
+        "label": "返回控制台",
+        "href": "https://gogogotoken.com"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "立即接入",
-      "href": "https://gogotoken.org/register"
-    }
+    ]
   },
   "footer": {
     "socials": {}
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "api": {
+    "mdx": {
+      "server": "https://gogogotoken.com",
+      "auth": {
+        "method": "bearer"
+      }
+    }
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "开始使用",
+        "icon": "rocket",
+        "pages": [
+          "introduction",
+          "auth"
+        ]
+      },
+      {
+        "group": "图片生成",
+        "icon": "image",
+        "pages": [
+          "images"
+        ]
+      },
+      {
+        "group": "Seedance 视频",
+        "icon": "video",
+        "pages": [
+          "video-models",
+          "video-generations",
+          "video-tasks",
+          "video-tools",
+          "seedance-token"
+        ]
+      },
+      {
+        "group": "Seedance 素材",
+        "icon": "folder-kanban",
+        "pages": [
+          "assets"
+        ]
+      },
+      {
+        "group": "兼容接口",
+        "icon": "plug",
+        "pages": [
+          "openai-compatible",
+          "kling-compatible",
+          "jimeng-compatible"
+        ]
+      },
+      {
+        "group": "账户与计费",
+        "icon": "wallet",
+        "pages": [
+          "billing"
+        ]
+      }
+    ]
   }
 }

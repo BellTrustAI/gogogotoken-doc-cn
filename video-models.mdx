@@ -1,0 +1,40 @@
+---
+title: "视频模型列表"
+sidebarTitle: "模型列表"
+description: "Seedance 2.0 视频生成模型与计费方式概览"
+icon: "list-video"
+---
+
+Seedance 2.0 视频生成接口提供 ARK 原生模型，按输出 token 据实计费，支持 480p、720p、1080p 分辨率。
+
+## 可用模型
+
+| 模型 | 说明 | 计费 | 视频输入 |
+| --- | --- | --- | --- |
+| `doubao-seedance-2-0` | ARK 原生旗舰模型，支持 `480p`、`720p`、`1080p` 输出。兼容 OpenAI Video API，任务完成后自动差额结算。 | 46-51 元/百万 token | 支持 |
+| `doubao-seedance-2-0-fast` | ARK 原生快速模型，生成更快、成本更低，不支持 `1080p` 输出。 | 37 元/百万 token | 支持 |
+
+## 分辨率
+
+可通过 `size` 或 `metadata.resolution` 指定输出分辨率。
+
+```json
+{
+  "size": "720x1280",
+  "metadata": {
+    "resolution": "720p"
+  }
+}
+```
+
+<Note>
+  分辨率获取优先级为 `metadata.resolution`、`size`、默认 `720p`。
+</Note>
+
+## 任务模式
+
+| 模式 | 接口 | 说明 |
+| --- | --- | --- |
+| 文生视频 | `POST /v1/video/generations` | 仅传提示词生成视频 |
+| 图生视频 | `POST /v1/video/generations` | 传入首帧图片、参考图片或 `metadata.content[]` |
+| 任务查询 | `GET /v1/video/generations/{task_id}` | 轮询查询任务状态和结果 |

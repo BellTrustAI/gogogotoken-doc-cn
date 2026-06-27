@@ -1,0 +1,104 @@
+---
+title: "图片生成"
+sidebarTitle: "图片生成"
+description: "通过 OpenAI Images 兼容格式调用 Seedream 文生图模型"
+icon: "image"
+api: "POST https://gogogotoken.com/v1/images/generations"
+---
+
+通过 OpenAI Images 兼容格式调用 Seedream 文生图模型。
+
+<RequestExample>
+```bash cURL
+curl -X POST https://gogogotoken.com/v1/images/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedream-4-0-250828",
+    "prompt": "现代智能手表产品海报，白色背景，柔和棚拍光线，突出屏幕和金属质感",
+    "n": 1,
+    "size": "1024x1024"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "created": 1730000000,
+  "data": [
+    {
+      "url": "https://assets.example.com/generated-image.png"
+    }
+  ]
+}
+```
+
+```json 401
+{
+  "error": {
+    "message": "Invalid API key",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key"
+  }
+}
+```
+</ResponseExample>
+
+## 接口说明
+
+该接口使用 OpenAI Images 兼容请求格式，适用于 Seedream 文生图模型。
+
+## 可用模型
+
+| 模型 | 说明 | 价格 | 计费 |
+| --- | --- | --- | --- |
+| `doubao-seedream-4-0-250828` | 高质量图像生成，画面细腻、光影自然、色彩准确，支持多种画风与比例。 | `$0.162 / 次` | 按次 |
+| `doubao-seedream-4-5-251128` | 在 4.0 基础上升级，画面精细度、风格多样性、人物细节和文字渲染更好。 | `$0.135 / 次` | 按次 |
+| `doubao-seedream-5-0-260128` | 旗舰文生图模型，适合构图创意、细节还原、光影质感和超高清出图。 | `$0.135 / 次` | 按次 |
+
+## 请求头
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  固定为 `application/json`。
+</ParamField>
+
+## 请求体
+
+<ParamField body="model" type="string" required default="doubao-seedream-4-0-250828">
+  模型名，见上方模型列表。
+</ParamField>
+
+<ParamField body="prompt" type="string" required default="现代智能手表产品海报，白色背景，柔和棚拍光线，突出屏幕和金属质感">
+  图片描述文本。
+</ParamField>
+
+<ParamField body="n" type="integer" default={1}>
+  生成数量，默认 `1`。
+</ParamField>
+
+<ParamField body="size" type="string" default="1024x1024">
+  图片尺寸，如 `1024x1024`。
+</ParamField>
+
+## 响应体
+
+<ResponseField name="created" type="integer">
+  响应创建时间戳。
+</ResponseField>
+
+<ResponseField name="data" type="object[]">
+  图片结果数组。
+
+  <ResponseField name="url" type="string">
+    生成图片的可访问 URL。
+  </ResponseField>
+
+  <ResponseField name="b64_json" type="string">
+    base64 编码的图片内容。具体返回字段取决于模型与渠道。
+  </ResponseField>
+</ResponseField>
