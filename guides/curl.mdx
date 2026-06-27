@@ -1,0 +1,136 @@
+---
+title: "无需 SDK，使用 cURL 命令行直接调用 GogoToken 兼容 REST API 完整使用指南"
+sidebarTitle: "cURL"
+description: "使用 cURL 命令行工具直接向 GogoToken REST API（https://gogotoken.org/v1）发送 HTTP 请求，无需安装任何 SDK 或额外依赖，适合快速调试接口、Shell 脚本自动化调用以及验证 API Key 可用性等场景。"
+---
+
+cURL 是测试和调试 API 的最直接方式。GogoToken 的 REST API 完全兼容 OpenAI 的请求格式，你可以用标准的 HTTP 请求与其交互，无需安装任何 SDK 或额外依赖。
+
+## 基础对话请求
+
+向 `/chat/completions` 端点发送 POST 请求，即可获得模型的回复：
+
+```bash
+curl https://gogotoken.org/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $GOGOTOKEN_API_KEY" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "messages": [
+      {"role": "user", "content": "用一句话解释量子纠缠"}
+    ]
+  }'
+```
+
+## 响应示例
+
+成功请求后，API 会返回如下格式的 JSON 响应：
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1699000000,
+  "model": "claude-opus-4-8",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "量子纠缠是指两个粒子无论相距多远，对其中一个粒子的测量会瞬间影响另一个粒子的状态。"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 35,
+    "total_tokens": 50
+  }
+}
+```
+
+<Note>
+  响应体中的 `usage` 字段记录了本次请求消耗的 Token 数量，GogoToken 按实际消耗的 Token 计费，可在控制台查看详细的用量记录。
+</Note>
+
+## 流式输出
+
+添加 `"stream": true` 参数并使用 `--no-buffer` 选项，即可启用服务端发送事件（SSE）流式输出：
+
+```bash
+curl https://gogotoken.org/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $GOGOTOKEN_API_KEY" \
+  --no-buffer \
+  -d '{
+    "model": "claude-sonnet-4-6",
+    "messages": [{"role": "user", "content": "讲一个短故事"}],
+    "stream": true
+  }'
+```
+
+流式响应会以 `data: ` 前缀逐行返回 JSON 数据块，最终以 `data: [DONE]` 结束：
+
+```
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":"从"},"index":0}]}
+
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":"前"},"index":0}]}
+
+data: [DONE]
+```
+
+## 查询可用模型
+
+向 `/models` 端点发送 GET 请求，可以获取 GogoToken 当前支持的所有模型列表：
+
+```bash
+curl https://gogotoken.org/v1/models \
+  -H "Authorization: Bearer $GOGOTOKEN_API_KEY"
+```
+
+返回示例：
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "id": "claude-opus-4-8", "object": "model" },
+    { "id": "claude-sonnet-4-6", "object": "model" },
+    { "id": "gpt-5-5", "object": "model" },
+    { "id": "gpt-4o", "object": "model" }
+  ]
+}
+```
+
+## 携带系统提示词
+
+通过在 `messages` 数组中添加 `system` 角色的消息，可以为模型设置行为指令：
+
+```bash
+curl https://gogotoken.org/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $GOGOTOKEN_API_KEY" \
+  -d '{
+    "model": "claude-opus-4-8",
+    "messages": [
+      {"role": "system", "content": "你是一位资深的 Linux 系统管理员，回答要简洁专业"},
+      {"role": "user", "content": "如何查看系统中占用内存最多的进程？"}
+    ],
+    "max_tokens": 500,
+    "temperature": 0.5
+  }'
+```
+
+<Tip>
+  在 macOS 和 Linux 中，推荐将 API Key 设置为 Shell 环境变量，这样在终端中可以直接使用 `$GOGOTOKEN_API_KEY`，无需每次手动粘贴密钥：
+
+  ```bash
+  # 临时设置（当前终端会话有效）
+  export GOGOTOKEN_API_KEY="your_api_key_here"
+
+  # 永久设置（写入 Shell 配置文件）
+  echo 'export GOGOTOKEN_API_KEY="your_api_key_here"' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+</Tip>

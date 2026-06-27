@@ -1,0 +1,94 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "luma",
+  "name": "GogoToken",
+  "colors": {
+    "primary": "#84CC16",
+    "light": "#BEF264",
+    "dark": "#4D7C0F"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "使用文档",
+        "groups": [
+          {
+            "group": "快速开始",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "核心概念",
+            "pages": [
+              "concepts/models",
+              "concepts/billing",
+              "concepts/rate-limits"
+            ]
+          },
+          {
+            "group": "接入指南",
+            "pages": [
+              "guides/openai-sdk",
+              "guides/python",
+              "guides/curl",
+              "guides/third-party-apps"
+            ]
+          },
+          {
+            "group": "账户管理",
+            "pages": [
+              "account/registration",
+              "account/balance",
+              "account/api-keys"
+            ]
+          },
+          {
+            "group": "帮助与支持",
+            "pages": [
+              "support/faq",
+              "support/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API 参考",
+        "groups": [
+          {
+            "group": "概览",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "接口端点",
+            "pages": [
+              "api/chat-completions",
+              "api/models"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "控制台",
+        "href": "https://gogotoken.org/register"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "立即接入",
+      "href": "https://gogotoken.org/register"
+    }
+  },
+  "footer": {
+    "socials": {}
+  }
+}

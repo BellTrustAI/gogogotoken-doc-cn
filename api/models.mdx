@@ -1,0 +1,123 @@
+---
+title: "GogoToken GET /v1/models 接口参考：获取当前平台全部可用 AI 模型列表说明"
+sidebarTitle: "Models"
+description: "通过 GogoToken GET /v1/models 端点查询平台当前支持的全部 AI 模型列表，包含 claude-opus-4-8、gpt-4o 等所有可用模型。每个模型对象包含 id、created 和 owned_by 字段，格式兼容 OpenAI。"
+---
+
+通过 GET /v1/models 接口，你可以获取 GogoToken 当前支持的所有模型列表。建议在应用启动时调用此接口，以确保使用的是最新可用的模型 ID。返回的模型 ID 可直接用于 [POST /v1/chat/completions](/api/chat-completions) 请求的 `model` 字段。
+
+**端点**
+
+```
+GET https://gogotoken.org/v1/models
+```
+
+## 请求示例
+
+此接口为 GET 请求，无需请求体，仅需携带认证头：
+
+```bash
+curl https://gogotoken.org/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+使用 Node.js SDK：
+
+```javascript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "https://gogotoken.org/v1",
+});
+
+const models = await client.models.list();
+console.log(models.data);
+```
+
+使用 Python SDK：
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://gogotoken.org/v1",
+)
+
+models = client.models.list()
+for model in models.data:
+    print(model.id)
+```
+
+## 响应字段
+
+<ResponseField name="object" type="string">
+  固定值 `"list"`，标识此响应为列表类型。
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  模型对象数组，每个元素代表一个可用模型。
+
+  <Expandable title="data 数组元素字段">
+    <ResponseField name="data[].id" type="string">
+      模型的唯一标识符（模型 ID）。在调用 `/v1/chat/completions` 时，将此值作为 `model` 参数传入。
+    </ResponseField>
+
+    <ResponseField name="data[].object" type="string">
+      固定值 `"model"`，标识此对象为模型类型。
+    </ResponseField>
+
+    <ResponseField name="data[].created" type="integer">
+      模型创建时间的 Unix 时间戳（秒）。
+    </ResponseField>
+
+    <ResponseField name="data[].owned_by" type="string">
+      模型的提供方。例如 `"anthropic"`（Claude 系列）或 `"openai"`（GPT 系列）。
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## 响应示例
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "claude-opus-4-8",
+      "object": "model",
+      "created": 1699000000,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "claude-opus-4-7",
+      "object": "model",
+      "created": 1697000000,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "object": "model",
+      "created": 1695000000,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "gpt-5-5",
+      "object": "model",
+      "created": 1699000000,
+      "owned_by": "openai"
+    },
+    {
+      "id": "gpt-4o",
+      "object": "model",
+      "created": 1690000000,
+      "owned_by": "openai"
+    }
+  ]
+}
+```
+
+<Tip>
+  如需了解各模型的能力对比、适用场景和价格详情，请查阅 [模型说明文档](/concepts/models) 页面。
+</Tip>

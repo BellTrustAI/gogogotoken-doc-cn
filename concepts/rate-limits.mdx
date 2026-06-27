@@ -1,0 +1,119 @@
+---
+title: "GogoToken API 请求频率限制详解：RPM 与 TPM 规则、429 错误格式及退避重试实践指南"
+sidebarTitle: "频率限制"
+description: "详细介绍 GogoToken API 的频率限制机制，包括 RPM（每分钟请求数）与 TPM（每分钟 Token 数）两种限制维度，说明触发 429 错误时的响应格式，并提供 Python 和 JavaScript 指数退避重试示例代码，帮助你构建稳健的 API 调用逻辑。"
+---
+
+GogoToken 对 API 请求设有频率限制，以保障所有用户的服务质量。了解限制规则可以帮助你设计更健壮的应用，避免因偶发的限流错误而影响用户体验。
+
+## 限制类型
+
+GogoToken 目前采用以下两种维度的频率限制：
+
+| 限制类型 | 说明 |
+|----------|------|
+| **RPM**（Requests Per Minute） | 每分钟允许发起的最大请求次数 |
+| **TPM**（Tokens Per Minute） | 每分钟允许消耗的最大 Token 数量 |
+
+<Note>
+  具体的 RPM 和 TPM 限制值以控制台中你的账户详情页显示为准。GogoToken 目前处于 Beta 阶段，限制值可能随平台容量调整而变化，我们会提前通知相关变更。
+</Note>
+
+两项限制独立计算，任意一项达到上限都会触发限流。例如，即使请求次数未超过 RPM，若单分钟内累计 Token 消耗超过 TPM 上限，后续请求同样会被暂时拒绝。
+
+## 429 错误响应
+
+当你的请求超出频率限制时，API 将返回 HTTP `429` 状态码，响应体格式如下：
+
+```json
+{
+  "error": {
+    "type": "rate_limit_exceeded",
+    "message": "请求过于频繁，请稍后重试",
+    "code": 429
+  }
+}
+```
+
+收到 429 响应时，**不要立即重试**，应等待一段时间后再发起请求。推荐使用下文介绍的指数退避策略，以避免重试风暴加剧限流情况。
+
+## 指数退避重试
+
+指数退避（Exponential Backoff）是处理限流错误的标准策略：每次重试前等待时间按指数增长，并叠加随机抖动，从而分散重试请求，降低再次触发限流的概率。
+
+### Python 示例
+
+```python
+import time
+import random
+from openai import OpenAI, RateLimitError
+
+client = OpenAI(
+    api_key="your-api-key",
+    base_url="https://gogotoken.org/v1",
+)
+
+def call_with_retry(messages, model="claude-opus-4-8", max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return client.chat.completions.create(
+                model=model,
+                messages=messages,
+            )
+        except RateLimitError:
+            if attempt == max_retries - 1:
+                raise
+            wait = (2 ** attempt) + random.random()
+            print(f"触发频率限制，{wait:.1f} 秒后重试...")
+            time.sleep(wait)
+```
+
+### JavaScript 示例
+
+```javascript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "your-api-key",
+  baseURL: "https://gogotoken.org/v1",
+});
+
+async function callWithRetry(messages, model = "claude-opus-4-8", maxRetries = 5) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await client.chat.completions.create({
+        model,
+        messages,
+      });
+    } catch (err) {
+      const isRateLimit = err?.status === 429;
+      if (!isRateLimit || attempt === maxRetries - 1) {
+        throw err;
+      }
+      const wait = (2 ** attempt + Math.random()) * 1000; // 毫秒
+      console.log(`触发频率限制，${(wait / 1000).toFixed(1)} 秒后重试...`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+}
+```
+
+两个示例的退避等待时间均遵循 `2ⁿ + 随机抖动` 的规律：
+
+| 重试次数 | 最短等待 | 最长等待（含抖动） |
+|----------|----------|--------------------|
+| 第 1 次  | 1 秒     | ~2 秒              |
+| 第 2 次  | 2 秒     | ~3 秒              |
+| 第 3 次  | 4 秒     | ~5 秒              |
+| 第 4 次  | 8 秒     | ~9 秒              |
+| 第 5 次  | 16 秒    | ~17 秒             |
+
+## 最佳实践
+
+- **批量请求时控制并发数**：避免在极短时间内并发大量请求，可使用队列或信号量限制同时发起的请求数。
+- **监控响应头**：部分限流响应会在 HTTP 响应头中返回 `Retry-After` 字段，可据此决定等待时长。
+- **区分错误类型**：只对 429 错误启用重试，其他错误（如 400 参数错误、401 认证失败）无需重试。
+
+<Tip>
+  如果你的应用需要高并发或更高的频率限制，请联系我们讨论限制调整，我们将根据实际需求评估并为你的账户配置更高的配额。
+</Tip>

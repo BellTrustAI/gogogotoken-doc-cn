@@ -1,0 +1,69 @@
+---
+title: "GogoToken API 参考概览：OpenAI 兼容接口、Base URL 与请求响应格式完整说明"
+sidebarTitle: "概览"
+description: "GogoToken 提供完全兼容 OpenAI 规范的 REST API，Base URL 为 https://gogotoken.org/v1。本页列出全部可用端点、HTTP 方法和状态码说明，并提供 Node.js、Python 与 cURL SDK 接入入口。"
+---
+
+GogoToken API 遵循 OpenAI API 规范，所有请求通过 HTTPS 发送到 `https://gogotoken.org/v1`。如果你已熟悉 OpenAI API，GogoToken 的使用方式完全相同——只需将 Base URL 替换为 GogoToken 的地址，并使用你的 GogoToken API 密钥即可。
+
+## Base URL
+
+```
+https://gogotoken.org/v1
+```
+
+所有 API 端点均以此地址为前缀。请确保你的客户端或 SDK 配置使用该 Base URL，而非 OpenAI 的官方地址。
+
+## 认证
+
+每个请求必须在 HTTP 请求头中携带有效的 Bearer Token。详细说明请参阅 [认证文档](/api/authentication)。
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## 请求格式
+
+所有请求体均使用 JSON 格式，并需在请求头中声明内容类型：
+
+```
+Content-Type: application/json
+```
+
+请求通过 HTTPS POST 或 GET 方法发送，具体方法取决于所调用的端点。
+
+## 响应格式
+
+所有 API 响应均以 JSON 格式返回，并遵循标准 HTTP 状态码规范：
+
+| 状态码 | 含义 |
+|--------|------|
+| `200` | 请求成功 |
+| `400` | 请求参数错误 |
+| `401` | 认证失败（API 密钥无效或缺失） |
+| `429` | 请求速率超限 |
+| `500` | 服务器内部错误 |
+
+## 可用端点
+
+| 端点 | 方法 | 描述 |
+|------|------|------|
+| `/v1/chat/completions` | `POST` | 创建对话补全 |
+| `/v1/models` | `GET` | 获取可用模型列表 |
+
+## SDK 快速入口
+
+<CardGroup cols={2}>
+  <Card title="Node.js SDK" icon="node-js" href="/guides/openai-sdk">
+    使用 OpenAI Node.js SDK 接入 GogoToken，只需修改 baseURL 和 API Key。
+  </Card>
+  <Card title="Python SDK" icon="python" href="/guides/python">
+    使用 OpenAI Python SDK 接入 GogoToken，配置简单，兼容性完整。
+  </Card>
+  <Card title="cURL 示例" icon="terminal" href="/guides/curl">
+    通过命令行 cURL 快速测试 GogoToken API，无需安装任何依赖。
+  </Card>
+  <Card title="第三方应用" icon="puzzle-piece" href="/guides/third-party-apps">
+    在 ChatBox、OpenCat 等第三方应用中配置 GogoToken 作为 API 后端。
+  </Card>
+</CardGroup>

@@ -1,0 +1,188 @@
+---
+title: "GogoToken API 错误排查指南：401、403、429 错误码解决方案"
+sidebarTitle: "问题排查"
+description: "系统性排查 GogoToken API 调用错误，全面覆盖 401 未授权、403 余额不足、404 模型不存在、429 频率限制及网络连接超时等常见 HTTP 错误码的原因分析与详细解决方案。"
+---
+
+本页列出调用 GogoToken API 时可能遇到的常见错误及其解决方法。大多数问题都可以通过检查 API Key、余额和请求格式来解决。
+
+## HTTP 错误码速查
+
+遇到报错时，首先确认响应中的 HTTP 状态码，再参照下表快速定位原因：
+
+| 错误码 | 含义 | 常见原因 |
+|--------|------|----------|
+| `401` | 未授权 | API Key 错误、缺少或格式不正确 |
+| `403` | 禁止访问 | 余额不足，或账号受限 |
+| `404` | 未找到 | 请求的模型名称不存在 |
+| `429` | 请求过多 | 超出频率限制 |
+| `500` | 服务器错误 | GogoToken 服务端错误，请重试 |
+| `503` | 服务不可用 | 上游模型暂时不可用，请稍后重试 |
+
+---
+
+## 401 — API Key 无效
+
+收到 `401 Unauthorized` 错误通常意味着请求中的身份认证信息有误。
+
+<Warning>
+  API Key 是访问 GogoToken 的唯一凭证，请勿将其提交到公开代码仓库或分享给他人。
+</Warning>
+
+**排查步骤：**
+
+1. **确认 `Authorization` 请求头格式正确**，必须严格按照以下格式传入：
+
+   ```bash
+   Authorization: Bearer YOUR_API_KEY
+   ```
+
+   注意 `Bearer` 与 Key 之间有且只有一个空格。
+
+2. **检查 Key 中是否含有多余空格或换行符**。复制粘贴时容易在头尾附带不可见字符，建议手动删除后重试。
+
+3. **前往控制台确认密钥状态**。登录 [GogoToken 控制台](https://gogotoken.org)，进入 **API Keys** 页面，确认对应密钥处于**启用**状态，而非已禁用或已删除。
+
+4. **尝试重新生成 API Key**。如果确认 Key 有效但仍报 `401`，可在控制台创建一个新密钥后重新测试。
+
+---
+
+## 403 — 余额不足
+
+收到 `403 Forbidden` 且错误信息提示余额不足时，说明账户可用余额已耗尽，API 调用被拒绝。
+
+<Note>
+  GogoToken 采用预付费模式，余额归零后请求将立即被拦截，不会产生欠费。
+</Note>
+
+**解决方案：**
+
+前往 [GogoToken 控制台](https://gogotoken.org) 的**充值**页面为账户补充余额。充值后即时生效，无需等待。
+
+建议在控制台开启**低余额提醒**，避免因余额耗尽导致服务中断。
+
+---
+
+## 429 — 频率限制
+
+收到 `429 Too Many Requests` 表示你的请求在短时间内超出了允许的频率上限。
+
+<Tip>
+  推荐在业务代码中实现带指数退避（Exponential Backoff）的自动重试逻辑，以优雅应对限频场景。
+</Tip>
+
+**推荐的重试策略（Python 示例）：**
+
+```python
+import time
+import random
+
+def call_with_backoff(api_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return api_func()
+        except Exception as e:
+            if "429" in str(e):
+                # 指数退避：等待 2^attempt 秒，并附加随机抖动
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"触发频率限制，{wait:.1f} 秒后重试（第 {attempt + 1} 次）...")
+                time.sleep(wait)
+            else:
+                raise e
+    raise Exception("已达最大重试次数")
+```
+
+如果你的业务需要更高的并发配额，请参阅 [频率限制说明](/concepts/rate-limits) 或联系支持团队申请提额。
+
+---
+
+## 404 — 模型不存在
+
+收到 `404 Not Found` 且错误信息指向模型名称时，通常是因为传入了拼写有误或不受支持的模型标识符。
+
+**排查步骤：**
+
+1. 检查请求体中 `model` 字段的拼写，模型名称**区分大小写**。
+
+2. 参照下表确认正确的模型名称：
+
+   | 模型显示名称 | 请求时使用的 `model` 值 |
+   |-------------|------------------------|
+   | Claude Opus 4.8 | `claude-opus-4-8` |
+   | Claude Opus 4.7 | `claude-opus-4-7` |
+   | Claude Sonnet 4.6 | `claude-sonnet-4-6` |
+   | GPT-5.5 | `gpt-5.5` |
+   | GPT-4o | `gpt-4o` |
+
+3. 完整的模型列表及最新名称请以 [模型说明页](/concepts/models) 为准，该页面会随新模型上线同步更新。
+
+---
+
+## 连接问题
+
+如果请求完全无法到达服务器（超时、连接被拒绝等），请按以下步骤排查：
+
+**1. 确认 `baseURL` 配置正确**
+
+GogoToken 的 API 端点为：
+
+```
+https://gogotoken.org/v1
+```
+
+<Warning>
+  常见错误：末尾多加了斜杠（`/v1/`）或漏掉了路径（`https://gogotoken.org`）。请确保 `baseURL` 与上方格式完全一致。
+</Warning>
+
+**2. 检查本地网络连接**
+
+确认你的设备可以正常访问外网，尤其是在企业内网或有代理的环境下，需确认 GogoToken 域名未被防火墙拦截。
+
+**3. 使用 cURL 验证连通性**
+
+在终端中运行以下命令，验证 API 端点是否可达：
+
+```bash
+curl -I https://gogotoken.org/v1/models \
+  -H "Authorization: Bearer your-api-key"
+```
+
+- 返回 `HTTP/2 200` 或 `401`：说明网络连通，问题在请求参数层面。
+- 请求超时或 `Connection refused`：说明存在网络层面的阻断，请检查网络或代理设置。
+
+**4. 在 SDK 中显式设置 baseURL**
+
+```python
+# OpenAI Python SDK 示例
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-api-key",
+    base_url="https://gogotoken.org/v1"
+)
+```
+
+```javascript
+// OpenAI Node.js SDK 示例
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "your-api-key",
+  baseURL: "https://gogotoken.org/v1",
+});
+```
+
+---
+
+## 获取帮助
+
+如果按照上述步骤排查后问题仍未解决，欢迎通过以下渠道联系我们获取支持：
+
+<CardGroup cols={2}>
+  <Card title="常见问题解答" icon="circle-question" href="/support/faq">
+    查阅 FAQ，了解注册、计费、模型等方面的常见疑问解答。
+  </Card>
+  <Card title="加入社区交流群" icon="users" href="https://gogotoken.org">
+    加入 GogoToken 微信群或 QQ 群，与开发者社区和官方团队实时交流，快速获得帮助。
+  </Card>
+</CardGroup>

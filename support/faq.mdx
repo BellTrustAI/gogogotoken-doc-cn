@@ -1,0 +1,115 @@
+---
+title: "GogoToken 常见问题解答：注册、计费、模型与 API 接入"
+sidebarTitle: "FAQ"
+description: "GogoToken 平台用户最常见问题全解答，涵盖账号注册流程、按量计费说明、余额管理、API 接入方式及所有支持模型，帮助你快速上手并自助解决常见疑问。"
+---
+
+以下是 GogoToken 用户最常问到的问题。如果你的问题不在此列，欢迎加入社区群获得帮助。
+
+<AccordionGroup>
+
+  ## 注册与访问
+
+  <Accordion title="GogoToken 怎么注册？需要邀请吗？">
+    目前处于邀请制 Beta 阶段。你可以通过社区群获取邀请码，或访问 [注册页面](/account/registration) 等待公开名额开放。我们会持续扩大内测规模，请关注社区动态。
+  </Accordion>
+
+  <Accordion title="没有邀请码能用吗？">
+    Beta 阶段以受邀用户为主，但我们会定期开放公开注册名额。加入社区微信群或 QQ 群可第一时间收到开放通知，敬请关注。
+  </Accordion>
+
+  ## 计费与余额
+
+  <Accordion title="GogoToken 怎么收费？有月费吗？">
+    没有月费，GogoToken 完全按量计费。费用根据你实际消耗的 Token 数量实时扣除，充多少用多少，未使用余额可申请退款。
+  </Accordion>
+
+  <Accordion title="余额会过期吗？">
+    不会。充值余额没有有效期，长期不使用也不会自动失效，可以放心充值。
+  </Accordion>
+
+  <Accordion title="如何查看我的用量？">
+    登录 [GogoToken 控制台](https://gogotoken.org)，在**账户**或**用量**页面可以查看详细的 API 调用记录、Token 消耗明细及费用汇总，支持按时间段筛选。
+  </Accordion>
+
+  <Accordion title="余额不够了会怎样？">
+    当账户余额不足时，API 调用将返回 `403` 错误（余额不足）。建议保持一定余额缓冲，避免业务中断。你可以在控制台开启低余额提醒。
+  </Accordion>
+
+  <Accordion title="我能申请退款吗？">
+    可以。未使用的余额支持申请退款，请联系 GogoToken 支持团队，我们会尽快为你处理。
+  </Accordion>
+
+  ## API 与接入
+
+  <Accordion title="GogoToken 和 OpenAI API 有什么区别？">
+    GogoToken 完全兼容 OpenAI API 格式，接入几乎零成本。唯一的区别是将请求的 `baseURL` 替换为：
+
+    ```
+    https://gogotoken.org/v1
+    ```
+
+    你现有的代码、SDK 和工具无需任何其他改动即可直接切换。
+  </Accordion>
+
+  <Accordion title="支持哪些模型？">
+    目前 GogoToken 支持以下主流模型：
+
+    - **Claude Opus 4.8** — Anthropic 旗舰推理模型
+    - **Claude Opus 4.7** — 上一代旗舰模型
+    - **Claude Sonnet 4.6** — 高速高并发均衡模型
+    - **GPT-5.5** — OpenAI 最新旗舰模型
+    - **GPT-4o** — OpenAI 多模态模型
+
+    完整模型列表及参数详见 [模型说明](/concepts/models)。
+  </Accordion>
+
+  <Accordion title="支持流式输出（Streaming）吗？">
+    支持。在请求体中设置 `"stream": true` 即可启用流式输出，行为与 OpenAI SDK 完全一致，兼容所有支持 Server-Sent Events (SSE) 的客户端。
+
+    ```json
+    {
+      "model": "gpt-4o",
+      "stream": true,
+      "messages": [{ "role": "user", "content": "你好" }]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="可以在 ChatBox、Cursor 等第三方工具中使用吗？">
+    可以。所有支持自定义 OpenAI API 端点的工具均与 GogoToken 兼容，包括但不限于 ChatBox、Cursor、Bob、沉浸式翻译等。详细配置步骤请参阅 [第三方应用接入指南](/guides/third-party-apps)。
+  </Accordion>
+
+  ## 模型与能力
+
+  <Accordion title="Claude Opus 4.8 和 Claude Sonnet 4.6 有什么区别？">
+    两款模型定位不同，适用场景各有侧重：
+
+    | 模型 | 定位 | 适用场景 |
+    |------|------|----------|
+    | Claude Opus 4.8 | 旗舰推理模型，能力最强 | 复杂代码、深度分析、长文档处理 |
+    | Claude Sonnet 4.6 | 速度更快、并发更高 | 高吞吐场景、实时对话、批量处理 |
+
+    Sonnet 4.6 的响应延迟更低、价格也更实惠，适合对速度和成本敏感的应用场景。
+  </Accordion>
+
+  <Accordion title="支持多模态（图像输入）吗？">
+    **GPT-5.5** 和 **GPT-4o** 支持图像输入，可在消息中传入 `image_url` 类型内容。Claude 模型目前主要面向文本任务，具体支持情况以控制台模型详情页显示为准。
+  </Accordion>
+
+  ## 稳定性与支持
+
+  <Accordion title="GogoToken 有 SLA 保证吗？">
+    Beta 阶段所有已上线模型均保证高可用，稳定性是我们的首要优先级。具体 SLA 条款请查阅 GogoToken 服务条款页面。如遇到持续性服务问题，请及时联系支持团队。
+  </Accordion>
+
+  <Accordion title="遇到问题怎么联系支持？">
+    你可以通过以下方式获取帮助：
+
+    - 加入 **微信社区群** 或 **QQ 交流群**，与其他开发者及官方团队实时沟通
+    - 发送邮件至官方支持邮箱，我们会在工作日内回复
+    - 查阅 [问题排查指南](/support/troubleshooting) 自助解决常见错误
+
+  </Accordion>
+
+</AccordionGroup>
