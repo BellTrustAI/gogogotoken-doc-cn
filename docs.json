@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "almond",
-  "name": "gogogotokenzh",
+  "name": "GoToken API 文档",
   "description": "gogogotoken.com — 国内站 Seedance / Seedream API 使用指南",
   "colors": {
     "primary": "#166E3F",
@@ -9,8 +9,8 @@
     "dark": "#166E3F"
   },
   "logo": {
-    "light": "/logo/gogogotoken-logo.png",
-    "dark": "/logo/gogogotoken-logo.png",
+    "light": "/logo/gogogotoken-logo-light.png",
+    "dark": "/logo/gogogotoken-logo-dark.png",
     "href": "https://gogogotoken.com"
   },
   "favicon": "/favicon.png",
