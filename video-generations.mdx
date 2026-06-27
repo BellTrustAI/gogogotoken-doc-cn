@@ -6,7 +6,11 @@ icon: "video"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
 
-视频生成是异步任务。提交后接口会立即返回 `task_id`，需要通过任务查询接口轮询获取结果。
+视频生成是异步任务。提交后接口会立即返回 `task_id`，需要通过 [任务查询](/video-tasks) 轮询获取结果。
+
+<Note>
+  本文档即 **SD2 官方用法**。`prompt`、`seconds`、`images`、`metadata.*` 等字段由平台转换为 ARK 上游请求体，语义与豆包 Seedance 2.0 一致。
+</Note>
 
 <RequestExample>
 ```bash 文生视频
@@ -40,8 +44,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 {
   "id": "task_1234567890",
   "task_id": "task_1234567890",
+  "object": "video",
+  "model": "doubao-seedance-2-0-fast",
   "status": "queued",
-  "model": "doubao-seedance-2-0-fast"
+  "progress": 0
 }
 ```
 
@@ -92,7 +98,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   }'
 ```
 
-高级模式可以通过 `metadata.content[]` 指定首帧图片和参考视频。
+高级模式通过 `metadata.content[]` 指定首帧、尾帧、参考图/视频/音频，字段与豆包官方 `content` 一致。
 
 ```bash
 curl -X POST https://gogogotoken.com/v1/video/generations \
@@ -101,7 +107,6 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   -d '{
     "model": "doubao-seedance-2-0",
     "prompt": "让产品在展示台上缓慢旋转，背景保持简洁，画面稳定且突出品牌质感",
-    "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "6",
     "size": "1080x1920",
     "metadata": {
@@ -113,12 +118,52 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
         },
         {
           "type": "video_url",
-          "video_url": { "url": "https://assets.example.com/reference-motion.mp4" }
+          "video_url": { "url": "https://assets.example.com/reference-motion.mp4" },
+          "role": "reference_video"
         }
       ]
     }
   }'
 ```
+
+使用 [素材管理](/assets) 登记的图片时，将 URL 换为 `asset://asset-xxx`（ID 格式以实际返回为准）：
+
+```json
+{
+  "type": "image_url",
+  "image_url": { "url": "asset://asset-20260627000800-l6jq6" },
+  "role": "first_frame"
+}
+```
+
+### `metadata.content` 中的 `role`
+
+| role | 适用类型 | 说明 |
+| --- | --- | --- |
+| `first_frame` | `image_url` | 首帧图生视频 |
+| `last_frame` | `image_url` | 尾帧（首尾帧生视频） |
+| `reference_image` | `image_url` | 参考图片 |
+| `reference_video` | `video_url` | 参考视频片段 |
+| `reference_audio` | `audio_url` | 参考音频 |
+
+<Note>
+  若同时传 `images[]` 与 `metadata.content`，平台以 **`metadata.content` 为准**（`images[]` 不会保留）。
+</Note>
+
+## 字段映射（服务端自动完成）
+
+你只需按下方参数提交；平台转换为 ARK 上游 JSON：
+
+| 你提交的字段 | 上游 ARK 字段 | 说明 |
+| --- | --- | --- |
+| `prompt` | `content[]` 中 `type: "text"` | 必填 |
+| `images[]` | `content[]` 中 `type: "image_url"` | 简单图生，不带 `role` |
+| `metadata.content[]` | `content[]` | 多模态；含 `role` 时与官方一致 |
+| `seconds` / `duration` | `duration` | `seconds` 优先 |
+| `size` / `metadata.resolution` | `resolution` | `metadata.resolution` 优先；`size` 支持 `720x1280` 或 `720p` |
+| `metadata.ratio` | `ratio` | 如 `16:9`、`9:16` |
+| `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
+| `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
 
 ## 提交响应
 
@@ -126,8 +171,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 {
   "id": "task_1234567890",
   "task_id": "task_1234567890",
+  "object": "video",
+  "model": "doubao-seedance-2-0-fast",
   "status": "queued",
-  "model": "doubao-seedance-2-0-fast"
+  "progress": 0
 }
 ```
 
@@ -150,31 +197,35 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="seconds" type="string" default="5">
-  视频时长，示例为 `"5"`。
+  视频时长（秒），传字符串如 `"5"`。优先于顶层 `duration`。
 </ParamField>
 
 <ParamField body="duration" type="number">
-  兼容字段，部分兼容接口使用该字段表达时长。
+  时长整数，兼容 OpenAI Video 客户端。若同时传 `seconds`，以 `seconds` 为准。
 </ParamField>
 
 <ParamField body="size" type="string" default="480x854">
-  分辨率或宽高，如 `1080x1920`、`720x1280`、`480x854`。
+  分辨率或像素尺寸，如 `1080x1920`、`720x1280`、`480x854`，或直接传 `480p` / `720p` / `1080p`。
 </ParamField>
 
 <ParamField body="images" type="string[]">
-  参考图片 URL 列表，图生视频时使用。
-</ParamField>
-
-<ParamField body="first_frame_image" type="string">
-  首帧图片 Base64。
-</ParamField>
-
-<ParamField body="last_frame_image" type="string">
-  尾帧图片 Base64。
+  公网图片 URL 列表，用于简单图生视频。多模态或需指定首帧/参考角色时，请使用 `metadata.content`。
 </ParamField>
 
 <ParamField body="metadata" type="object">
-  扩展参数，可包含 `content`、`resolution`、`ratio`、`frames`、`seed` 等。
+  SD2 扩展参数，字段名与上游 ARK 一致，放在 `metadata` 下提交：`content`、`resolution`、`ratio`、`generate_audio`、`return_last_frame`、`seed` 等。
+</ParamField>
+
+<ParamField body="metadata.resolution" type="string">
+  输出分辨率 `480p` / `720p` / `1080p`，优先级高于 `size`。
+</ParamField>
+
+<ParamField body="metadata.ratio" type="string">
+  宽高比，如 `16:9`、`9:16`。
+</ParamField>
+
+<ParamField body="metadata.content" type="object[]">
+  多模态输入数组。每项含 `type`（`image_url` / `video_url` / `audio_url`）、对应 URL 对象，以及可选 `role`（见上文 role 表）。
 </ParamField>
 
 ## 响应体

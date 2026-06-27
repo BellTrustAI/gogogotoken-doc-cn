@@ -6,7 +6,7 @@ icon: "coins"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
 
-使用 `doubao-seedance-2-0` 或 `doubao-seedance-2-0-fast` 提交视频生成任务。接口兼容 OpenAI Video API 格式，按输出 token 据实计费，任务完成后自动差额结算。
+`doubao-seedance-2-0` 与 `doubao-seedance-2-0-fast` 走 **ARK Token 计费**。提交与查询均使用 SD2 主路径 `/v1/video/generations`；任务完成后按 `data.data.usage.completion_tokens` 差额结算。
 
 <RequestExample>
 ```bash 文生视频 1080p
@@ -28,17 +28,18 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   -d '{
     "model": "doubao-seedance-2-0-fast",
     "prompt": "turn the product image into a polished product showcase video with slow camera movement",
+    "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "5",
-    "size": "720x1280",
-    "first_frame_image": "data:image/png;base64,<BASE64_IMAGE>"
+    "size": "720x1280"
   }'
 ```
 </RequestExample>
 
 <ResponseExample>
-```json 200
+```json 提交成功
 {
   "id": "task_1234567890",
+  "task_id": "task_1234567890",
   "object": "video",
   "model": "doubao-seedance-2-0",
   "status": "queued",
@@ -46,19 +47,20 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 }
 ```
 
-```json completed
+```json 查询完成（GET /v1/video/generations/{task_id}）
 {
-  "id": "task_1234567890",
-  "object": "video",
-  "model": "doubao-seedance-2-0",
-  "status": "completed",
-  "progress": 100,
-  "output": {
-    "video_url": "https://assets.example.com/generated-video.mp4"
-  },
-  "usage": {
-    "total_tokens": 108900,
-    "completion_tokens": 108900
+  "code": "success",
+  "data": {
+    "task_id": "task_1234567890",
+    "status": "SUCCESS",
+    "progress": "100%",
+    "result_url": "https://assets.example.com/generated-video.mp4",
+    "data": {
+      "usage": {
+        "completion_tokens": 108900,
+        "total_tokens": 108900
+      }
+    }
   }
 }
 ```
@@ -72,13 +74,13 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ```
 
 <Note>
-  任务 `status` 变为 `"completed"` 后，系统会根据 `usage.completion_tokens` 和模型当时的分辨率/输入类型自动重算费用。可在控制台日志中查看实际扣费明细。
+  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast` 不支持 `1080p`，传 `1080x1920` 会被服务端拒绝。
 </Note>
 
 ## 参数说明
 
 <ParamField body="model" type="string" required default="doubao-seedance-2-0">
-  `doubao-seedance-2-0` 或 `doubao-seedance-2-0-fast`。
+  仅 `doubao-seedance-2-0` 或 `doubao-seedance-2-0-fast` 走 Token 计费；带 `-480p` 等后缀的别名模型按秒计费。
 </ParamField>
 
 <ParamField body="prompt" type="string" required default="a premium smartwatch rotating on a clean studio pedestal, soft product lighting, slow camera push-in">
@@ -90,31 +92,23 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 </ParamField>
 
 <ParamField body="size" type="string" default="1080x1920">
-  分辨率/宽高比，如 `1080x1920`、`720x1280`、`480x854`。
+  分辨率/像素尺寸，如 `1080x1920`、`720x1280`、`480x854`。
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
   输出分辨率，优先级高于 `size`。
 </ParamField>
 
-<ParamField body="first_frame_image" type="string">
-  首帧图片 Base64。
-</ParamField>
-
-<ParamField body="last_frame_image" type="string">
-  尾帧图片 Base64。
+<ParamField body="images" type="string[]">
+  图生视频时传入公网图片 URL 列表。复杂多模态请使用 `metadata.content`（见 [视频生成](/video-generations)）。
 </ParamField>
 
 ## 响应体
 
 <ResponseField name="id" type="string">
-  视频任务 ID。
+  提交时返回的任务 ID。
 </ResponseField>
 
-<ResponseField name="status" type="string">
-  任务状态。
-</ResponseField>
-
-<ResponseField name="usage.completion_tokens" type="integer">
-  模型服务返回的真实输出 token 数，用于任务完成后的差额结算。
+<ResponseField name="data.data.usage.completion_tokens" type="integer">
+  查询完成时上游返回的真实输出 token 数。
 </ResponseField>

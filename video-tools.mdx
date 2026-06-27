@@ -1,7 +1,7 @@
 ---
-title: "视频下载与混剪"
-sidebarTitle: "下载与混剪"
-description: "代理下载已生成视频，并对已有视频进行二次创作"
+title: "视频下载"
+sidebarTitle: "视频下载"
+description: "代理下载已生成的 Seedance 视频内容"
 icon: "clapperboard"
 api: "GET https://gogogotoken.com/v1/videos/{task_id}/content"
 ---
@@ -35,36 +35,6 @@ curl -o output.mp4 https://gogogotoken.com/v1/videos/task_1234567890/content \
   API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
 </ParamField>
 
-## 视频混剪
-
-对已有视频进行二次创作或混剪。
-
-```http
-POST /v1/videos/{video_id}/remix
-```
-
-<RequestExample>
-```bash 混剪
-curl -X POST https://gogogotoken.com/v1/videos/vid_1234567890/remix \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "doubao-seedance-2-0-fast",
-    "prompt": "给视频添加暖色调滤镜"
-  }'
-```
-</RequestExample>
-
-## 参数说明
-
-<ParamField path="video_id" type="string" required>
-  要混剪的视频 ID。
-</ParamField>
-
-<ParamField body="model" type="string" required>
-  视频生成模型。
-</ParamField>
-
-<ParamField body="prompt" type="string" required>
-  二次创作或混剪描述。
-</ParamField>
+<Warning>
+  **Remix 混剪（`POST /v1/videos/{video_id}/remix`）不属于 Seedance 官方能力**，仅适用于 OpenAI Sora 兼容任务。Seedance 2.0 请使用 [视频生成](/video-generations) 重新提交任务。
+</Warning>

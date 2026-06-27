@@ -11,6 +11,10 @@ icon: "book-open"
   所有接口统一使用 `https://gogogotoken.com` 作为 Base URL，并通过 Bearer Token 鉴权。
 </Note>
 
+<Note>
+  本站 **Seedance 2.0（SD2）官方用法** 即本文档所述接口：`POST /v1/video/generations` 提交视频、`POST /v1/seedance/asset/*` 管理素材。平台在服务端将你提交的字段转换为火山 ARK 上游格式（如 `content[]`、`duration`、`resolution`），你无需直接调用 `/api/v3/contents/generations/tasks`。
+</Note>
+
 ## 能力概览
 
 <CardGroup cols={2}>
@@ -21,7 +25,7 @@ icon: "book-open"
     提交 Seedance 2.0 文生视频、图生视频任务，并通过 task_id 轮询结果。
   </Card>
   <Card title="素材管理" icon="folder-kanban" href="/assets">
-    使用 Seedance 原生素材接口创建、上传、查询、分页列出和更新素材。
+    Seedance 素材 OpenAPI：`/v1/seedance/asset/*`，字段与火山官方一致。
   </Card>
   <Card title="兼容接口" icon="plug" href="/openai-compatible">
     兼容 OpenAI Video、Kling 和 Jimeng 即梦请求格式，便于迁移现有客户端。

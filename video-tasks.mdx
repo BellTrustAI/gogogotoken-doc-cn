@@ -6,10 +6,16 @@ icon: "refresh-cw"
 api: "GET https://gogogotoken.com/v1/video/generations/{task_id}"
 ---
 
-视频生成任务提交后，通过 `task_id` 轮询查询任务状态与生成结果。
+视频生成任务提交后，通过 `task_id` 轮询查询任务状态与生成结果。**SD2 推荐路径**：`GET /v1/video/generations/{task_id}`。
+
+<Note>
+  两种查询路径返回结构不同，请与提交路径保持一致：
+  - **`GET /v1/video/generations/{task_id}`**（SD2 主路径）→ `{code, data: TaskDto}`，`status` 为大写（如 `IN_PROGRESS`、`SUCCESS`），视频地址在 `data.result_url`，上游原始 JSON（含 `usage`）在 `data.data`
+  - **`GET /v1/videos/{task_id}`**（OpenAI 兼容）→ 扁平 `{id, object, status, progress, metadata.url}`，`status` 为小写（如 `in_progress`、`completed`）
+</Note>
 
 <RequestExample>
-```bash cURL
+```bash SD2 主路径
 curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
@@ -20,6 +26,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 {
   "code": "success",
   "data": {
+    "task_id": "task_1234567890",
     "status": "IN_PROGRESS",
     "progress": "50%"
   }
@@ -30,26 +37,33 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 {
   "code": "success",
   "data": {
+    "task_id": "task_1234567890",
     "status": "SUCCESS",
     "progress": "100%",
-    "result_url": "https://assets.example.com/generated-video.mp4"
+    "result_url": "https://assets.example.com/generated-video.mp4",
+    "data": {
+      "status": "succeeded",
+      "content": {
+        "video_url": "https://assets.example.com/generated-video.mp4"
+      },
+      "usage": {
+        "completion_tokens": 108900,
+        "total_tokens": 108900
+      }
+    }
   }
 }
 ```
 
-```json Token 计费
+```json OpenAI 兼容路径
 {
   "id": "task_1234567890",
   "object": "video",
   "model": "doubao-seedance-2-0",
   "status": "completed",
   "progress": 100,
-  "output": {
-    "video_url": "https://assets.example.com/generated-video.mp4"
-  },
-  "usage": {
-    "total_tokens": 108900,
-    "completion_tokens": 108900
+  "metadata": {
+    "url": "https://assets.example.com/generated-video.mp4"
   }
 }
 ```
@@ -58,7 +72,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ## 路径参数
 
 <ParamField path="task_id" type="string" required>
-  视频生成任务 ID。
+  视频生成任务 ID（提交响应中的 `id` / `task_id`）。
 </ParamField>
 
 ## 请求头
@@ -67,26 +81,22 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
   API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
 </ParamField>
 
-## 响应体
+## 响应体（`/v1/video/generations/{task_id}`）
 
-<ResponseField name="status" type="string">
-  任务状态，例如 `queued`、`running`、`SUCCESS`、`completed`、`failed`。
+<ResponseField name="data.status" type="string">
+  任务状态：`QUEUED`、`IN_PROGRESS`、`SUCCESS`、`FAILURE` 等。
 </ResponseField>
 
-<ResponseField name="progress" type="string">
-  任务进度。不同响应格式中可能是字符串百分比或数字。
+<ResponseField name="data.progress" type="string">
+  进度百分比字符串，如 `"50%"`。
 </ResponseField>
 
-<ResponseField name="result_url" type="string">
-  生成成功后返回的视频 URL。
+<ResponseField name="data.result_url" type="string">
+  生成成功后的视频 URL（平台提取自上游响应）。
 </ResponseField>
 
-<ResponseField name="output.video_url" type="string">
-  OpenAI 兼容结构中的视频 URL。
-</ResponseField>
-
-<ResponseField name="usage" type="object">
-  Token 计费任务的用量信息。
+<ResponseField name="data.data.usage.completion_tokens" type="integer">
+  Token 计费模型（`doubao-seedance-2-0` / `-fast`）的上游真实输出 token，用于差额结算。
 </ResponseField>
 
 ## 轮询建议
@@ -94,7 +104,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 状态通常按以下顺序变化：
 
 ```text
-queued -> running -> succeeded / failed
+QUEUED / IN_PROGRESS -> SUCCESS / FAILURE
 ```
 
-成功后的 `result_url` 约 24 小时内有效，请及时下载。
+成功后的 `result_url` 约 24 小时内有效，请及时 [下载](/video-tools)。
