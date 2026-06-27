@@ -9,8 +9,8 @@
     "dark": "#166E3F"
   },
   "logo": {
-    "light": "/logo/gogogotoken-logo-light.png",
-    "dark": "/logo/gogogotoken-logo-dark.png",
+    "light": "/logo/gogogotoken-logo.png",
+    "dark": "/logo/gogogotoken-logo.png",
     "href": "https://gogogotoken.com"
   },
   "favicon": "/favicon.png",
