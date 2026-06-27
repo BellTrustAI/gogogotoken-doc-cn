@@ -100,7 +100,11 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 </ParamField>
 
 <ParamField body="images" type="string[]">
-  图生视频时传入公网图片 URL 列表。复杂多模态请使用 `metadata.content`（见 [视频生成](/video-generations)）。
+  图生视频时传入公网图片 URL 列表。传入后按**含媒体输入**档计费。复杂多模态请使用 `metadata.content`（见 [视频生成](/video-generations)）。
+</ParamField>
+
+<ParamField body="metadata.content" type="array">
+  高级多模态内容；含 `image_url` / `video_url` / `audio_url` 或 `asset://` 时按**含媒体输入**档计费。
 </ParamField>
 
 ## 响应体
