@@ -46,6 +46,7 @@
     "groups": [
       {
         "group": "开始使用",
+        "public": true,
         "icon": "rocket",
         "pages": [
           "introduction",
@@ -54,6 +55,7 @@
       },
       {
         "group": "图片生成",
+        "public": true,
         "icon": "image",
         "pages": [
           "images"
@@ -61,6 +63,7 @@
       },
       {
         "group": "Seedance 视频",
+        "public": true,
         "icon": "video",
         "pages": [
           "video-models",
@@ -72,6 +75,7 @@
       },
       {
         "group": "Seedance 素材",
+        "public": true,
         "icon": "folder-kanban",
         "pages": [
           "assets"
@@ -79,6 +83,7 @@
       },
       {
         "group": "兼容接口",
+        "public": true,
         "icon": "plug",
         "pages": [
           "openai-compatible",
@@ -88,6 +93,7 @@
       },
       {
         "group": "账户与计费",
+        "public": true,
         "icon": "wallet",
         "pages": [
           "billing"
