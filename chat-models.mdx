@@ -1,0 +1,139 @@
+---
+title: "豆包对话模型"
+sidebarTitle: "对话模型"
+description: "通过 OpenAI Chat Completions 兼容格式调用豆包 Seed 大语言模型"
+icon: "message-square"
+api: "POST https://gogogotoken.com/v1/chat/completions"
+---
+
+通过 OpenAI Chat Completions 兼容接口调用豆包 Seed 系列大语言模型，支持流式与非流式响应。
+
+<RequestExample>
+```bash 非流式
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seed-2.1-turbo",
+    "messages": [
+      { "role": "user", "content": "用三句话介绍 Seedance 2.0 视频生成能力" }
+    ]
+  }'
+```
+
+```bash 流式
+curl -N -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seed-2.1-turbo",
+    "stream": true,
+    "messages": [
+      { "role": "user", "content": "写一段智能手表产品文案" }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "chatcmpl_abc123",
+  "object": "chat.completion",
+  "model": "doubao-seed-2.1-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Seedance 2.0 支持文生视频与图生视频..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 28,
+    "completion_tokens": 120,
+    "total_tokens": 148
+  }
+}
+```
+</ResponseExample>
+
+## 可用模型
+
+| 模型 | 说明 | 计费方式 |
+| --- | --- | --- |
+| `doubao-seed-2.0-pro` | 旗舰对话模型，长上下文场景按输入长度分档计价 | 按 token，分档 |
+| `doubao-seed-2.1-pro` | 2.1 系列专业版，均衡推理与成本 | 按 token |
+| `doubao-seed-2.1-turbo` | 2.1 系列极速版，适合高并发与低延迟 | 按 token |
+| `doubao-seed-evolving` | 演进版对话模型 | 按 token |
+
+<Note>
+  模型是否对你的 API Key 可用，取决于控制台令牌分组与渠道配置。以控制台「定价」页列出的模型为准。
+</Note>
+
+## doubao-seed-2.0-pro 分档计价
+
+按单次请求的上下文长度（`len`，单位 token）选择计价档位：
+
+| 上下文长度 | 输入（元 / 百万 token） | 输出（元 / 百万 token） |
+| --- | --- | --- |
+| ≤ 32K | ¥3.20 | ¥16.00 |
+| 32K – 128K | ¥4.80 | ¥24.00 |
+| 128K – 256K | ¥9.60 | ¥48.00 |
+
+## 其他模型参考单价
+
+以下为平台默认零售参考价（元 / 百万 token），实际以控制台定价为准：
+
+| 模型 | 输入 | 输出 |
+| --- | --- | --- |
+| `doubao-seed-2.1-pro` | ¥6.00 | ¥30.00 |
+| `doubao-seed-2.1-turbo` | ¥3.00 | ¥15.00 |
+| `doubao-seed-evolving` | ¥6.00 | ¥30.00 |
+
+## 参数说明
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权，格式 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+<ParamField body="model" type="string" required default="doubao-seed-2.1-turbo">
+  对话模型 ID，见上方模型列表。
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  OpenAI 兼容消息数组，每项含 `role`（`system` / `user` / `assistant`）与 `content`。
+</ParamField>
+
+<ParamField body="stream" type="boolean" default={false}>
+  设为 `true` 时以 SSE 流式返回增量内容。
+</ParamField>
+
+<ParamField body="temperature" type="number">
+  采样温度，控制输出随机性。
+</ParamField>
+
+<ParamField body="max_tokens" type="integer">
+  限制本次回复的最大输出 token 数。
+</ParamField>
+
+## 响应体
+
+<ResponseField name="choices[].message.content" type="string">
+  模型回复正文（非流式）。
+</ResponseField>
+
+<ResponseField name="usage.prompt_tokens" type="integer">
+  本次请求计入计费的输入 token 数。
+</ResponseField>
+
+<ResponseField name="usage.completion_tokens" type="integer">
+  本次请求计入计费的输出 token 数。
+</ResponseField>
+
+## 相关页面
+
+- [计费说明](/billing) — 各产品线结算方式概览
+- [认证说明](/auth) — Base URL 与鉴权

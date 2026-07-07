@@ -6,7 +6,7 @@ icon: "image"
 api: "POST https://gogogotoken.com/v1/images/generations"
 ---
 
-通过 OpenAI Images 兼容格式调用 Seedream 文生图模型。
+通过 OpenAI Images 兼容格式调用 Seedream 文生图模型。按**每张图片固定价格**计费，提交成功后立即扣费。
 
 <RequestExample>
 ```bash cURL
@@ -14,7 +14,7 @@ curl -X POST https://gogogotoken.com/v1/images/generations \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "doubao-seedream-4-0-250828",
+    "model": "doubao-seedream-4.0",
     "prompt": "现代智能手表产品海报，白色背景，柔和棚拍光线，突出屏幕和金属质感",
     "n": 1,
     "size": "1024x1024"
@@ -51,11 +51,15 @@ curl -X POST https://gogogotoken.com/v1/images/generations \
 
 ## 可用模型
 
-| 模型 | 说明 | 价格 | 计费 |
+| 模型 | 说明 | 参考单价 | 计费 |
 | --- | --- | --- | --- |
-| `doubao-seedream-4-0-250828` | 高质量图像生成，画面细腻、光影自然、色彩准确，支持多种画风与比例。 | `$0.162 / 次` | 按次 |
-| `doubao-seedream-4-5-251128` | 在 4.0 基础上升级，画面精细度、风格多样性、人物细节和文字渲染更好。 | `$0.135 / 次` | 按次 |
-| `doubao-seedream-5-0-260128` | 旗舰文生图模型，适合构图创意、细节还原、光影质感和超高清出图。 | `$0.135 / 次` | 按次 |
+| `doubao-seedream-4.0` | 高质量图像生成，画面细腻、光影自然、色彩准确，支持多种画风与比例 | ¥0.20 / 张 | 按次 |
+| `doubao-seedream-4.5` | 在 4.0 基础上升级，画面精细度、风格多样性、人物细节和文字渲染更好 | ¥0.25 / 张 | 按次 |
+| `doubao-seedream-5.0-lite` | 轻量旗舰文生图，适合构图创意、细节还原与日常出图 | ¥0.22 / 张 | 按次 |
+
+<Note>
+  推荐使用上表中的短模型名。部分历史长 ID（如 `doubao-seedream-4-0-250828`）若仍在你的令牌分组中可用，计费规则与对应版本一致。以控制台「定价」页为准。
+</Note>
 
 ## 请求头
 
@@ -69,7 +73,7 @@ curl -X POST https://gogogotoken.com/v1/images/generations \
 
 ## 请求体
 
-<ParamField body="model" type="string" required default="doubao-seedream-4-0-250828">
+<ParamField body="model" type="string" required default="doubao-seedream-4.0">
   模型名，见上方模型列表。
 </ParamField>
 
@@ -78,7 +82,7 @@ curl -X POST https://gogogotoken.com/v1/images/generations \
 </ParamField>
 
 <ParamField body="n" type="integer" default={1}>
-  生成数量，默认 `1`。
+  生成数量，默认 `1`。每张图按模型单价计费。
 </ParamField>
 
 <ParamField body="size" type="string" default="1024x1024">

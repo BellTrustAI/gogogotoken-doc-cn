@@ -15,15 +15,17 @@
 
 - **两套独立价目表**：国内对齐 **火山 ARK CNY**；海外对齐 **BytePlus USD**。
 - **禁止**用汇率互相推导；改国内价须对照火山官方，改海外价须对照 BytePlus 官方。
-- 仅 `doubao-seedance-2-0` / `doubao-seedance-2-0-fast` 走 **token 计费**；`*-260128` 等别名仍按秒。
+- 仅 `doubao-seedance-2-0` / `doubao-seedance-2-0-fast` / `doubao-seedance-2-0-mini` 走 **token 计费**；`*-260128` 等别名仍按秒。
 
 ### 国内（火山）— 用户文档 `video-models.mdx`
 
 官方价（CNY/M output tokens，2026-06）：
 
-| 模型 | 480/720 文生 | 480/720 媒体 | 1080 文生 | 1080 媒体 | fast 文生 | fast 媒体 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 档位 | ¥46 | ¥28 | ¥51 | ¥31 | ¥37 | ¥22 |
+| 模型 | 480/720 文生 | 480/720 媒体 | 1080 文生 | 1080 媒体 | fast 文生 | fast 媒体 | mini 文生 | mini 媒体 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 档位 | ¥46 | ¥28 | ¥51 | ¥31 | ¥37 | ¥22 | ¥23 | ¥14 |
+
+mini **不支持 1080p**。
 
 ### 后台 ModelRatio（国内，baseline 档）
 
@@ -33,6 +35,7 @@
 | --- | --- | --- |
 | `doubao-seedance-2-0` | **25.5** | 1080p 文生 ≈ ¥51/M |
 | `doubao-seedance-2-0-fast` | **18.5** | 文生 ≈ ¥37/M |
+| `doubao-seedance-2-0-mini` | **11.5** | 文生 ≈ ¥23/M |
 
 分辨率 / 媒体输入由代码 `variant_ratio` 自动乘算（`volcTokenBilledVariantRatio`），**不要**为每个分档单独写 ModelRatio。
 
@@ -59,19 +62,23 @@
 2. **不要**把海外 USD 价写进国内 MDX，也不要用汇率换算填国内表。
 3. 用户文档禁止出现：ModelRatio 数值、AK/SK、内部项目名、渠道 ID。
 
-## 文档页面索引（Seedance）
+## 文档页面索引
 
 | 路径 | 用途 |
 | --- | --- |
-| `video-models.mdx` | 模型 + CNY 价目表 |
+| `video-models.mdx` | Seedance 模型 + CNY 价目表 |
 | `seedance-token.mdx` | Token 计费 API |
 | `video-generations.mdx` | 提交任务 |
 | `video-tasks.mdx` | 轮询查询 |
-| `assets.mdx` | 素材管理 |
+| `assets.mdx` | 素材管理（CreateAsset ¥0.10/次） |
+| `images.mdx` | Seedream 按张计费 |
+| `chat-models.mdx` | Seed 对话 + 2.0-pro 分档 |
+| `billing.mdx` | 全产品线计费汇总 |
 | `video-tools.mdx` | 控制台工具说明 |
 
 ## 变更记录
 
 | 日期 | 说明 |
 | --- | --- |
+| 2026-07-07 | 新增 mini / Seedream CNY 短模型名 / CreateAsset 计费 / chat-models 豆包对话页；修复 auth.mdx frontmatter |
 | 2026-06-27 | 细化 video-models 分档表与「媒体输入」定义；补充 Assistant 与国内/海外价目分离说明 |

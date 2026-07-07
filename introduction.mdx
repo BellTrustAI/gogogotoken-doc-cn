@@ -5,7 +5,7 @@ description: "gogogotoken.com 国内站 API 文档入口"
 icon: "book-open"
 ---
 
-**gogogotoken.com** 国内站文档提供基于豆包 Seedance 2.0 / Seedream 模型的 AI 图像与视频生成 API，并兼容 OpenAI Video、Kling、Jimeng 即梦接口格式。
+**gogogotoken.com** 国内站文档提供基于豆包 Seedance 2.0 / Seedream / Seed 对话模型的 AI 图像、视频与对话 API，并兼容 OpenAI Video、Kling、Jimeng 即梦接口格式。
 
 <Note>
   所有接口统一使用 `https://gogogotoken.com` 作为 Base URL，并通过 Bearer Token 鉴权。
@@ -19,10 +19,13 @@ icon: "book-open"
 
 <CardGroup cols={2}>
   <Card title="图片生成" icon="image" href="/images">
-    通过 OpenAI Images 兼容格式调用 Seedream 4.0 / 4.5 / 5.0 文生图模型。
+    通过 OpenAI Images 兼容格式调用 Seedream 4.0 / 4.5 / 5.0-lite 文生图模型。
   </Card>
   <Card title="视频生成" icon="video" href="/video-generations">
-    提交 Seedance 2.0 文生视频、图生视频任务，并通过 task_id 轮询结果。
+    提交 Seedance 2.0 文生视频、图生视频任务（含 mini 轻量版），并通过 task_id 轮询结果。
+  </Card>
+  <Card title="对话模型" icon="message-square" href="/chat-models">
+    通过 OpenAI Chat Completions 调用豆包 Seed 2.0 / 2.1 大语言模型。
   </Card>
   <Card title="素材管理" icon="folder-kanban" href="/assets">
     Seedance 素材 OpenAPI：`/v1/seedance/asset/*`，字段与火山官方一致。

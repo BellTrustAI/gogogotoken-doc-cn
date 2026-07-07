@@ -5,7 +5,7 @@ description: "Seedance 2.0 视频生成模型与 CNY 计费方式概览"
 icon: "list-video"
 ---
 
-Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费，支持 480p、720p、1080p 分辨率。
+Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费，支持 480p、720p、1080p 分辨率（mini 仅 480p / 720p）。
 
 <Note>
   费率对齐 **火山引擎 ARK 官方人民币价目**（2026-06），与海外站（gogogotoken.ai）美元价目**独立维护**，不是汇率换算。
@@ -17,6 +17,7 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 | --- | --- | --- | --- |
 | `doubao-seedance-2-0` | ARK 原生旗舰模型，兼容 OpenAI Video API，任务完成后自动差额结算 | 1080p | 支持 |
 | `doubao-seedance-2-0-fast` | 更快、成本更低 | 720p | 支持 |
+| `doubao-seedance-2-0-mini` | 轻量版，适合低成本预览与批量试片 | 720p | 支持 |
 
 ## 官方单价（CNY / 百万 output tokens）
 
@@ -33,6 +34,15 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 | --- | --- |
 | 纯文本 / 文生（无媒体输入） | ¥37 |
 | 含媒体输入 | ¥22 |
+
+### `doubao-seedance-2-0-mini`
+
+轻量模型**不支持 1080p**，传 `1080p` 或 `1080x1920` 会被服务端拒绝。
+
+| 场景 | CNY / 百万 tokens |
+| --- | --- |
+| 纯文本 / 文生（无媒体输入） | ¥23 |
+| 含媒体输入 | ¥14 |
 
 <Note>
   **媒体输入**包括：`images[]`、公网 `image_url` / `video_url` / `audio_url`，以及 `metadata.content[]` 中的 `asset://` 首帧或参考素材。不仅限于「视频 URL」字段。
@@ -52,7 +62,7 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 ```
 
 <Note>
-  分辨率优先级：`metadata.resolution` → `size`（转为 `480p`/`720p`/`1080p`）→ 默认 `720p`。`doubao-seedance-2-0-fast` 传 `1080p` 会被拒绝。
+  分辨率优先级：`metadata.resolution` → `size`（转为 `480p`/`720p`/`1080p`）→ 默认 `720p`。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 传 `1080p` 会被拒绝。
 </Note>
 
 ## 任务模式

@@ -55,8 +55,8 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
 
 | 接口 | 端点 | 说明 |
 | --- | --- | --- |
-| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组 |
-| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（按次少量计费） |
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
 | GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
 | GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
 | ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
@@ -79,6 +79,8 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 | `Description` | string | 否 | 描述 |
 
 ## CreateAsset
+
+登记公网素材到指定素材组，成功扣费 **¥0.10 / 次**。创建素材组 `CreateAssetGroup` 免费。
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
