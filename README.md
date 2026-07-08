@@ -7,7 +7,7 @@
 | 仓库 | 站点 | 说明 |
 | --- | --- | --- |
 | [gogogotoken-doc](https://github.com/...) | gogogotoken.ai（新加坡） | 海外站完整文档：大模型、工具配置、工作流等 |
-| **gogogotoken-doc-cn**（本仓库） | gogogotoken.com（国内） | Seedance / Seedream 图像与视频、素材、兼容接口与计费 |
+| **gogogotoken-doc-cn**（本仓库） | gogogotoken.com（国内） | Seedance / Kling / Seedream 图像与视频、素材、计费 |
 
 两套文档 **独立部署**，内容源可从 `gogogotoken-doc/domestic/gogogotokenzh/` 同步到本仓库根目录的 `*.mdx`。
 

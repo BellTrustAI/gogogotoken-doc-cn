@@ -16,6 +16,21 @@
 - **两套独立价目表**：国内对齐 **火山 ARK CNY**；海外对齐 **BytePlus USD**。
 - **禁止**用汇率互相推导；改国内价须对照火山官方，改海外价须对照 BytePlus 官方。
 - 仅 `doubao-seedance-2-0` / `doubao-seedance-2-0-fast` / `doubao-seedance-2-0-mini` 走 **token 计费**；`*-260128` 等别名仍按秒。
+- **Kling（TokenHub）** 与 Seedance **独立**：模型 `kling-v2-5-turbo` / `kling-v2-6` / `kling-v3`，按上游积分结算，**禁止**写进 Seedance 价目表。
+
+### 国内 Kling（TokenHub）— 用户文档 `kling-models.mdx`
+
+| 模型 | ModelPrice（预扣上限 ¥） | max credits |
+| --- | --- | --- |
+| `kling-v2-5-turbo` | 5 | 5 |
+| `kling-v2-6` | 12 | 12 |
+| `kling-v3` | 45 | 45 |
+
+- 零售价：**¥1 / 积分**（`yuan_per_credit = ModelPrice / maxCredits`）。
+- 结算：上游 `final_unit_deduction` 精确积分，**不**在网关按秒复算。
+- 渠道：type **50**，`base_url` = `https://tokenhub.tencentmaas.com`；`model_mapping` 如 `kling-v2-5-turbo` → `kl-video-v2-5-turbo`。
+- 代码 SSOT：`gotoken-api/relay/channel/task/kling/tokenhub.go`（`tokenHubMaxCreditsByModel`）。
+- 用户文档勿写渠道 ID、上游 sk、ModelRatio 内部键名。
 
 ### 国内（火山）— 用户文档 `video-models.mdx`
 
@@ -75,10 +90,14 @@ mini **不支持 1080p**。
 | `chat-models.mdx` | Seed 对话 + 2.0-pro 分档 |
 | `billing.mdx` | 全产品线计费汇总 |
 | `video-tools.mdx` | 控制台工具说明 |
+| `kling-models.mdx` | Kling 模型 + TokenHub 积分价目 |
+| `kling-compatible.mdx` | Kling 文生/图生视频 API |
+| `kling-tasks.mdx` | Kling 任务轮询 |
 
 ## 变更记录
 
 | 日期 | 说明 |
 | --- | --- |
+| 2026-07-08 | 新增 Kling TokenHub 文档三页；修正 kling-tasks 查询响应为 TaskDto（大写 status）；aspect_ratio 默认 1:1；补充分组倍率/失败全额退款说明 |
 | 2026-07-07 | 新增 mini / Seedream CNY 短模型名 / CreateAsset 计费 / chat-models 豆包对话页；修复 auth.mdx frontmatter |
 | 2026-06-27 | 细化 video-models 分档表与「媒体输入」定义；补充 Assistant 与国内/海外价目分离说明 |

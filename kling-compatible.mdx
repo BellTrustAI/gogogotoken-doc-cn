@@ -1,12 +1,19 @@
 ---
-title: "Kling 兼容接口"
-sidebarTitle: "Kling 兼容"
-description: "兼容 Kling API 格式的文生视频与图生视频接口"
-icon: "plug"
+title: "Kling 视频生成"
+sidebarTitle: "视频生成"
+description: "可灵 Kling 文生视频与图生视频 API（TokenHub 原生模型）"
+icon: "video"
 api: "POST https://gogogotoken.com/kling/v1/videos/text2video"
 ---
 
-Kling 兼容接口会将请求转换为 Seedance 2.0 视频生成格式。查询返回格式与通用视频接口一致。
+国内站 Kling 接口对接 **腾讯 TokenHub** 上游，使用原生模型 `kling-v2-5-turbo`、`kling-v2-6`、`kling-v3`（**不是** Seedance 转换）。模型列表与积分计费见 [Kling 模型与计费](/kling-models)。
+
+所有请求 Base URL 为 `https://gogogotoken.com`，需携带：
+
+```http
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
 
 <RequestExample>
 ```bash 文生视频
@@ -14,8 +21,10 @@ curl -X POST https://gogogotoken.com/kling/v1/videos/text2video \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model_name": "doubao-seedance-2-0-fast-480p",
+    "model_name": "kling-v2-5-turbo",
     "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "duration": 5,
+    "aspect_ratio": "16:9",
     "cfg_scale": 0.5
   }'
 ```
@@ -25,9 +34,10 @@ curl -X POST https://gogogotoken.com/kling/v1/videos/image2video \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model_name": "doubao-seedance-2-0-fast-720p",
+    "model_name": "kling-v2-6",
     "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
-    "image": "https://assets.example.com/product-watch.jpg"
+    "image": "https://assets.example.com/product-watch.jpg",
+    "duration": 5
   }'
 ```
 </RequestExample>
@@ -35,9 +45,12 @@ curl -X POST https://gogogotoken.com/kling/v1/videos/image2video \
 <ResponseExample>
 ```json 200
 {
-  "id": "task_1234567890",
-  "task_id": "task_1234567890",
-  "status": "queued"
+  "id": "task_xxxxxxxxxxxxxxxx",
+  "task_id": "task_xxxxxxxxxxxxxxxx",
+  "object": "video",
+  "model": "kling-v2-5-turbo",
+  "status": "queued",
+  "created_at": 1783440501
 }
 ```
 </ResponseExample>
@@ -48,62 +61,72 @@ curl -X POST https://gogogotoken.com/kling/v1/videos/image2video \
 POST /kling/v1/videos/text2video
 ```
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `model_name` | string | 是 | 模型名称，也支持 `model` 字段 |
-| `prompt` | string | 是 | 视频描述 |
-| `duration` | number | 否 | 视频时长 |
-| `cfg_scale` | number | 否 | 提示词相关性 |
-
-## 查询文生视频任务
-
-```http
-GET /kling/v1/videos/text2video/{task_id}
-```
-
 ## 图生视频
 
 ```http
 POST /kling/v1/videos/image2video
 ```
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `model_name` | string | 是 | 模型名称，也支持 `model` 字段 |
-| `prompt` | string | 是 | 视频描述 |
-| `image` | string | 是 | 首帧图片 URL |
-| `duration` | number | 否 | 视频时长 |
+图生视频请求体需包含 `image`（首帧图片公网 URL）。也支持在 JSON 中传 `{"url":"..."}` 或 `{"base64":"..."}` 对象格式。
 
-## 查询图生视频任务
+## 查询任务
 
 ```http
+GET /kling/v1/videos/text2video/{task_id}
 GET /kling/v1/videos/image2video/{task_id}
 ```
+
+两条路径按同一 `task_id` 查询均可；返回 `{code, data: TaskDto}`（大写 `status`、`result_url`）。亦可选用 `GET /v1/videos/{task_id}` 获取 OpenAI Video 格式。详见 [Kling 任务查询](/kling-tasks)。
+
+## 请求参数
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `model_name` / `model` | string | 是 | `kling-v2-5-turbo`、`kling-v2-6`、`kling-v3` |
+| `prompt` | string | 是 | 视频描述 |
+| `image` | string / object | 图生必填 | 首帧图 URL，或 `{"url":"..."}` / `{"base64":"..."}` |
+| `image_tail` | string / object | 否 | 尾帧图（图生视频） |
+| `duration` | number | 否 | 时长（秒），默认 `5` |
+| `aspect_ratio` | string | 否 | 画幅：`1:1`（默认）、`16:9`、`9:16` |
+| `mode` | string | 否 | 默认 `std` |
+| `cfg_scale` | number | 否 | 提示词相关性，默认 `0.5` |
+| `negative_prompt` | string | 否 | 负向提示词 |
+| `camera_control` | object | 否 | 镜头控制（type + config） |
+| `callback_url` | string | 否 | 回调地址 |
+| `external_task_id` | string | 否 | 调用方自定义任务 ID |
+
+<Note>
+  通过统一接口 `POST /v1/video/generations` 提交时，可将上述 Kling 字段放在 `metadata` 中，并设置 `model` 为 Kling 模型名；平台会识别并走 Kling 通道。Kling 专用路径的请求体**无需**再包一层 `metadata`。
+</Note>
 
 ## 请求头
 
 <ParamField header="Authorization" type="string" required>
-  API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+  API Key 鉴权，格式为 `Bearer YOUR_API_KEY`。
 </ParamField>
 
 <ParamField header="Content-Type" type="string" required>
   固定为 `application/json`。
 </ParamField>
 
-## 请求体
+## 请求体（文生视频）
 
-<ParamField body="model_name" type="string" required default="doubao-seedance-2-0-fast-480p">
-  Kling 兼容模型名称，也支持传 `model` 字段。
+<ParamField body="model_name" type="string" required default="kling-v2-5-turbo">
+  Kling 模型名；与 `model` 字段等价。
 </ParamField>
 
-<ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
-  视频描述。
-</ParamField>
-
-<ParamField body="image" type="string">
-  图生视频的首帧图片 URL。
+<ParamField body="prompt" type="string" required>
+  视频描述文本。
 </ParamField>
 
 <ParamField body="duration" type="number" default={5}>
-  视频时长。
+  目标视频时长（秒）。
+</ParamField>
+
+<ParamField body="aspect_ratio" type="string" default="1:1">
+  输出画幅比例：`1:1`、`16:9`、`9:16`。未传时默认 `1:1`；也可通过统一接口的 `size`（如 `1920x1080` → `16:9`）间接指定。
+</ParamField>
+
+<ParamField body="cfg_scale" type="number" default={0.5}>
+  提示词引导强度。
 </ParamField>

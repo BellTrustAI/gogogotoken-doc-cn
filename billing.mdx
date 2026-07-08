@@ -1,11 +1,11 @@
 ---
 title: "计费说明"
 sidebarTitle: "计费说明"
-description: "Seedance、Seedream 与素材接口的计费与结算说明"
+description: "Seedance、Kling、Seedream 与素材接口的计费与结算说明"
 icon: "receipt"
 ---
 
-本站按模型类型采用不同计费方式：**视频按输出 token 据实结算**、**图片按张固定价**、**素材登记按次少量计费**。实际扣费以控制台日志为准。
+本站按模型类型采用不同计费方式：**Seedance 视频按输出 token 据实结算**、**Kling 视频按上游积分据实结算**、**图片按张固定价**、**素材登记按次少量计费**。实际扣费以控制台日志为准。
 
 ## Seedance 2.0 视频（Token 计费）
 
@@ -58,6 +58,32 @@ icon: "receipt"
         = ¥4.968
 ```
 
+## Kling 视频（积分计费） {#kling-视频积分计费}
+
+可灵 Kling 模型（`kling-v2-5-turbo`、`kling-v2-6`、`kling-v3`）通过 TokenHub 按**积分**计费。模型定价与预扣上限一致时，参考零售价为 **¥1 / 积分**；若 API Key 所属分组配置了倍率，实收会乘以该倍率。任务提交时按模型**预扣上限**冻结额度，成功后按上游 `final_unit_deduction` 实收并退还差额，**失败则退还全部预扣**。
+
+| 模型 | 预扣上限（积分） | 参考预扣金额 |
+| --- | --- | --- |
+| `kling-v2-5-turbo` | 5 | ¥5 |
+| `kling-v2-6` | 12 | ¥12 |
+| `kling-v3` | 45 | ¥45 |
+
+### 结算示例
+
+`kling-v2-5-turbo`，5 秒 720P 成片，上游扣 **1.5 积分**：
+
+```text
+预扣     = ¥5.00（提交时）
+实收     = 1.5 × ¥1/积分 × 分组倍率（示例倍率 1.0）= ¥1.50
+退款     = ¥5.00 − ¥1.50 = ¥3.50
+```
+
+使用日志「任务结算详情」可查看上游积分、视频时长与结算公式。各档位按秒单价见 [Kling 模型与计费](/kling-models)。
+
+<Note>
+  Kling **不要**使用 Seedance 的 `doubao-seedance-*` 模型名；接口路径为 `/kling/v1/videos/*`，与 `/v1/video/generations`（SD2）相互独立。
+</Note>
+
 ## Seedream 图片（按张计费）
 
 | 模型 | 参考单价 |
@@ -83,7 +109,8 @@ icon: "receipt"
 
 ## 结算方式
 
-- **视频**：任务完成后根据 `completion_tokens`、模型、分辨率与是否含媒体输入计算最终费用。
+- **Seedance 视频**：任务完成后根据 `completion_tokens`、模型、分辨率与是否含媒体输入计算最终费用。
+- **Kling 视频**：任务完成后根据上游 `final_unit_deduction`（积分）结算，支持小数积分。
 - **图片**：请求成功即扣费。
 - **素材**：`CreateAsset` 成功即扣费。
 - **对话**：按每次请求的 prompt / completion token 计费。
@@ -100,4 +127,5 @@ icon: "receipt"
 
 ## 预扣与结算
 
-视频任务提交时会进行额度校验。任务完成后根据实际输出 token 数结算；余额不足时返回 HTTP 402。
+- **Seedance 视频**：任务提交时额度校验；完成后按实际输出 token 差额结算；余额不足时返回 HTTP 402。
+- **Kling 视频**：提交时按模型预扣上限冻结；成功后按上游积分实收并自动退款；详见 [Kling 模型与计费](/kling-models)。

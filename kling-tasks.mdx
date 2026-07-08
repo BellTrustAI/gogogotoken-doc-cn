@@ -1,0 +1,119 @@
+---
+title: "Kling 任务查询"
+sidebarTitle: "任务查询"
+description: "轮询 Kling 文生视频 / 图生视频任务状态与结果"
+icon: "refresh-cw"
+api: "GET https://gogogotoken.com/kling/v1/videos/text2video/{task_id}"
+---
+
+任务提交成功后返回 `task_id`（与 `id` 相同）。轮询直至 `data.status` 为 `SUCCESS` 或 `FAILURE`。
+
+<Note>
+  **`GET /kling/v1/videos/*` 查询**返回 `{code, data: TaskDto}`，其中 `status` 为**大写**（如 `IN_PROGRESS`、`SUCCESS`），视频地址在 `data.result_url`。这与 Seedance 主路径 `GET /v1/video/generations/{task_id}` 结构相同，但字段含义与 Seedance 的 `data.data.usage` 不同。
+
+  若需要 **OpenAI Video 兼容**响应（小写 `status`、`metadata.url`），请改用 `GET /v1/videos/{task_id}`（见下文「OpenAI 格式查询」）。
+</Note>
+
+<RequestExample>
+```bash Kling 路径（推荐）
+curl https://gogogotoken.com/kling/v1/videos/text2video/task_xxxxxxxxxxxxxxxx \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```bash 图生视频任务（同 task_id 亦可查）
+curl https://gogogotoken.com/kling/v1/videos/image2video/task_xxxxxxxxxxxxxxxx \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 处理中
+{
+  "code": "success",
+  "data": {
+    "task_id": "task_xxxxxxxxxxxxxxxx",
+    "status": "IN_PROGRESS",
+    "progress": "50%",
+    "platform": "50"
+  }
+}
+```
+
+```json 成功
+{
+  "code": "success",
+  "data": {
+    "task_id": "task_xxxxxxxxxxxxxxxx",
+    "status": "SUCCESS",
+    "progress": "100%",
+    "result_url": "https://example.cdn.example.com/....mp4",
+    "data": {
+      "status": "completed",
+      "duration": "5.041",
+      "final_unit_deduction": "1.5",
+      "video_url": "https://example.cdn.example.com/....mp4"
+    }
+  }
+}
+```
+
+```json 失败
+{
+  "code": "success",
+  "data": {
+    "task_id": "task_xxxxxxxxxxxxxxxx",
+    "status": "FAILURE",
+    "fail_reason": "upstream error message"
+  }
+}
+```
+</ResponseExample>
+
+## 状态说明（`data.status`）
+
+| 值 | 含义 |
+| --- | --- |
+| `SUBMITTED` / `QUEUED` | 已提交 / 排队中 |
+| `IN_PROGRESS` | 生成中 |
+| `SUCCESS` | 成功，视频地址见 `data.result_url` |
+| `FAILURE` | 失败，见 `data.fail_reason` |
+
+`data.data` 为上游原始 JSON（含 `duration`、`final_unit_deduction` 等），供调试与对账参考。
+
+## 轮询建议
+
+- 间隔 **3–10 秒** 查询一次；成片通常需数十秒至数分钟。
+- 文生视频与图生视频可用**任意一条** Kling 查询路径（`text2video` / `image2video`），只要 `task_id` 正确即可。
+- 成功后的 `result_url` 多为上游 **带签名临时链接**，请在有效期内下载或转存。
+- 计费在任务**成功完成**后按上游积分结算；详见 [Kling 模型与计费](/kling-models)。
+
+## OpenAI 格式查询（可选）
+
+```http
+GET /v1/videos/{task_id}
+```
+
+返回扁平 OpenAI Video JSON，例如：
+
+```json
+{
+  "id": "task_xxxxxxxxxxxxxxxx",
+  "object": "video",
+  "status": "completed",
+  "progress": 100,
+  "seconds": "5.041",
+  "metadata": {
+    "url": "https://example.cdn.example.com/....mp4"
+  }
+}
+```
+
+此处 `status` 为小写（`queued` / `in_progress` / `completed` / `failed`）。
+
+## 下载视频
+
+拿到 `result_url` 或 `metadata.url` 后可直接 HTTP 下载；也可使用（需登录或 API Key）：
+
+```http
+GET /v1/videos/{task_id}/content
+```
