@@ -23,15 +23,25 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
   -d '{ "Name": "我的素材组" }'
 ```
 
-```bash 上传素材
+```bash 上传素材（公网 URL）
 curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "GroupId": "group_xxx",
     "Name": "参考图1",
     "AssetType": "Image",
     "URL": "https://assets.example.com/photo.jpg"
+  }'
+```
+
+```bash 上传素材（本地原图 base64）
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Name": "参考图1",
+    "AssetType": "Image",
+    "Data": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
   }'
 ```
 
@@ -84,10 +94,15 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `GroupId` | string | 是 | 所属素材组 ID |
+| `GroupId` | string | 否 | 所属素材组 ID。部分渠道的素材组已由平台固定，可不填；填写后在这类渠道会被忽略。具体请咨询管理员 |
 | `Name` | string | 是 | 素材名称 |
 | `AssetType` | string | 是 | `Image` 或 `Video` |
-| `URL` | string | 是 | 公网 HTTPS 图片/视频地址（不支持本地文件、base64） |
+| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址 |
+| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。平台会自动转存后登记，无需自备图床 |
+
+<Note>
+  `URL` 与 `Data` 二选一：已有公网直链用 `URL`；只有本地原图用 `Data` 传 base64，平台自动转存为公网素材，无需你自己搭图床。
+</Note>
 
 ## GetAsset
 
@@ -123,7 +138,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 
 **上传报 URL 无效？**
 
-换一张能公网直接打开的 `https` 链接。
+换一张能公网直接打开的 `https` 链接；或改用 `Data` 字段直接传图片 base64，由平台自动转存，无需自备图床。
 
 **asset:// 图生报找不到素材？**
 
