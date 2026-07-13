@@ -9,22 +9,23 @@ icon: "receipt"
 
 ## Seedance 2.0 视频（Token 计费）
 
-`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 按输出 token 据实计费。任务提交时会进行额度校验，任务完成后按实际 `completion_tokens` 差额结算。
+`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 按输出 token 据实计费。提交时按**请求声明的分辨率**与是否含媒体输入预扣额度；任务成功后按上游返回的 `completion_tokens` 与**实际生成分辨率档**差额结算（多退少补）。
 
 参考：[火山引擎 Seedance 2.0 计费文档](https://www.volcengine.com/docs/82379/1544106?lang=zh#02affcb8)
 
 ### doubao-seedance-2-0
 
-旗舰模型，支持 1080p。
+旗舰模型，支持 1080p / 4K。
 
 | 输出分辨率 | 纯文本 / 文生（无媒体输入） | 含媒体输入 |
 | --- | --- | --- |
+| 4K | 26.00 元/百万 token | 16.00 元/百万 token |
 | 1080p | 51.00 元/百万 token | 31.00 元/百万 token |
 | 480p / 720p | 46.00 元/百万 token | 28.00 元/百万 token |
 
 ### doubao-seedance-2-0-fast
 
-快版模型，不支持 1080p。
+快版模型，不支持 1080p / 4K。
 
 | 输出分辨率 | 纯文本 / 文生（无媒体输入） | 含媒体输入 |
 | --- | --- | --- |
@@ -32,7 +33,7 @@ icon: "receipt"
 
 ### doubao-seedance-2-0-mini
 
-轻量模型，不支持 1080p。
+轻量模型，不支持 1080p / 4K。
 
 | 输出分辨率 | 纯文本 / 文生（无媒体输入） | 含媒体输入 |
 | --- | --- | --- |
@@ -109,7 +110,7 @@ icon: "receipt"
 
 ## 结算方式
 
-- **Seedance 视频**：任务完成后根据 `completion_tokens`、模型、分辨率与是否含媒体输入计算最终费用。
+- **Seedance 视频**：任务完成后根据 `completion_tokens`、模型、**上游实际生成分辨率档**与是否含媒体输入计算最终费用（与请求声明分辨率不一致时，以实际上游结果为准）。
 - **Kling 视频**：任务完成后根据上游 `final_unit_deduction`（积分）结算，支持小数积分。
 - **图片**：请求成功即扣费。
 - **素材**：`CreateAsset` 成功即扣费。
@@ -127,5 +128,5 @@ icon: "receipt"
 
 ## 预扣与结算
 
-- **Seedance 视频**：任务提交时额度校验；完成后按实际输出 token 差额结算；余额不足时返回 HTTP 402。
+- **Seedance 视频**：提交时按请求分辨率预扣；完成后按 `completion_tokens` 与实际生成分辨率档差额结算；失败退还预扣；余额不足时返回 HTTP 402。详见 [Token 计费](/seedance-token)。
 - **Kling 视频**：提交时按模型预扣上限冻结；成功后按上游积分实收并自动退款；详见 [Kling 模型与计费](/kling-models)。

@@ -6,7 +6,11 @@ icon: "coins"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
 
-`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 走 **ARK Token 计费**。提交与查询均使用 SD2 主路径 `/v1/video/generations`；任务完成后按 `data.data.usage.completion_tokens` 差额结算。
+`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 走 **ARK Token 计费**。提交与查询均使用 SD2 主路径 `/v1/video/generations`。
+
+<Note>
+  **预扣与结算**：提交时按请求声明的分辨率与是否含媒体输入预扣额度；任务成功后读取 `data.data.usage.completion_tokens`，并按上游**实际生成分辨率档**重新计价，多退少补。价目分档见 [视频模型列表](/video-models) 与 [计费说明](/billing)。
+</Note>
 
 <RequestExample>
 ```bash 文生视频 1080p
