@@ -17,7 +17,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-0",
     "prompt": "a premium smartwatch rotating on a clean studio pedestal, soft product lighting, slow camera push-in",
     "seconds": "5",
-    "size": "1080x1920"
+    "size": "1080p"
   }'
 ```
 
@@ -30,7 +30,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "prompt": "turn the product image into a polished product showcase video with slow camera movement",
     "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "5",
-    "size": "720x1280"
+    "size": "720p"
   }'
 ```
 
@@ -42,7 +42,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-0-mini",
     "prompt": "产品特写缓慢旋转，简洁白底棚拍",
     "seconds": "5",
-    "size": "480x854"
+    "size": "480p"
   }'
 ```
 </RequestExample>
@@ -86,7 +86,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ```
 
 <Note>
-  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 不支持 `1080p`，传 `1080x1920` 会被服务端拒绝。
+  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 不支持 `1080p` / `4k`，传对应档位会被服务端拒绝。
 </Note>
 
 ## 参数说明
@@ -103,12 +103,12 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
   视频时长，传字符串如 `"5"`。用于生成请求，**不参与 token 计费乘算**。
 </ParamField>
 
-<ParamField body="size" type="string" default="1080x1920">
-  分辨率/像素尺寸，如 `1080x1920`、`720x1280`、`480x854`。
+<ParamField body="size" type="string" default="720p">
+  官方分辨率枚举：`480p`、`720p`、`1080p`、`4k`（仅 `doubao-seedance-2-0`）。与 `metadata.resolution` 等价，后者优先。不支持像素串（如 `1280x720`）。
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
-  输出分辨率，优先级高于 `size`。
+  输出分辨率，取值同上。具体像素由 `resolution` 与 `metadata.ratio`（如 `16:9`）共同决定。
 </ParamField>
 
 <ParamField body="images" type="string[]">

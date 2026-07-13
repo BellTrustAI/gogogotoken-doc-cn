@@ -5,7 +5,7 @@ description: "Seedance 2.0 视频生成模型与 CNY 计费方式概览"
 icon: "list-video"
 ---
 
-Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费，支持 480p、720p、1080p 分辨率（mini 仅 480p / 720p）。
+Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费，支持 480p、720p、1080p、4K（标准版；mini 仅 480p / 720p）。
 
 <Note>
   本页仅覆盖 **Seedance（豆包）** 模型。可灵 **Kling** 视频（积分计费、`kling-v2-*` / `kling-v3`）见 [Kling 模型与计费](/kling-models)。
@@ -19,7 +19,7 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 
 | 模型 | 说明 | 最高分辨率 | 媒体输入 |
 | --- | --- | --- | --- |
-| `doubao-seedance-2-0` | ARK 原生旗舰模型，兼容 OpenAI Video API，任务完成后自动差额结算 | 1080p | 支持 |
+| `doubao-seedance-2-0` | ARK 原生旗舰模型，兼容 OpenAI Video API，任务完成后自动差额结算 | 4K | 支持 |
 | `doubao-seedance-2-0-fast` | 更快、成本更低 | 720p | 支持 |
 | `doubao-seedance-2-0-mini` | 轻量版，适合低成本预览与批量试片 | 720p | 支持 |
 
@@ -31,6 +31,7 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 | --- | --- | --- |
 | 480p / 720p | ¥46 | ¥28 |
 | 1080p | ¥51 | ¥31 |
+| 4K | ¥26 | ¥16 |
 
 ### `doubao-seedance-2-0-fast`
 
@@ -41,7 +42,7 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 
 ### `doubao-seedance-2-0-mini`
 
-轻量模型**不支持 1080p**，传 `1080p` 或 `1080x1920` 会被服务端拒绝。
+轻量模型**不支持 1080p / 4K**，传 `1080p` 或 `4k` 会被服务端拒绝。
 
 | 场景 | CNY / 百万 tokens |
 | --- | --- |
@@ -58,15 +59,16 @@ Seedance 2.0 视频生成接口提供 ARK 原生模型，按**输出 token** 据
 
 ```json
 {
-  "size": "720x1280",
+  "size": "720p",
   "metadata": {
-    "resolution": "720p"
+    "resolution": "720p",
+    "ratio": "9:16"
   }
 }
 ```
 
 <Note>
-  分辨率优先级：`metadata.resolution` → `size`（转为 `480p`/`720p`/`1080p`）→ 默认 `720p`。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 传 `1080p` 会被拒绝。
+  分辨率须使用官方枚举 `480p` / `720p` / `1080p` / `4k`（标准版）。可通过 `metadata.resolution` 或 `size` 传入（优先级：`metadata.resolution` → `size` → 默认 `720p`）。传像素串（如 `1280x720`）会返回 `400 invalid_resolution`。画幅用 `metadata.ratio` 指定。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 传 `1080p` / `4k` 会被拒绝。
 </Note>
 
 ## 任务模式

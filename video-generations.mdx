@@ -21,7 +21,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-0-fast",
     "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
     "seconds": "5",
-    "size": "480x854"
+    "size": "480p"
   }'
 ```
 
@@ -34,7 +34,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
     "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "5",
-    "size": "720x1280"
+    "size": "720p"
   }'
 ```
 </RequestExample>
@@ -77,7 +77,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-0-fast",
     "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
     "seconds": "5",
-    "size": "480x854"
+    "size": "480p"
   }'
 ```
 
@@ -94,7 +94,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "prompt": "基于产品首帧生成一段展示视频，镜头缓慢推进，突出产品材质和屏幕细节",
     "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "5",
-    "size": "720x1280"
+    "size": "720p"
   }'
 ```
 
@@ -108,7 +108,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-0",
     "prompt": "让产品在展示台上缓慢旋转，背景保持简洁，画面稳定且突出品牌质感",
     "seconds": "6",
-    "size": "1080x1920",
+    "size": "1080p",
     "metadata": {
       "content": [
         {
@@ -160,7 +160,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `images[]` | `content[]` 中 `type: "image_url"` | 简单图生，不带 `role` |
 | `metadata.content[]` | `content[]` | 多模态；含 `role` 时与官方一致 |
 | `seconds` / `duration` | `duration` | `seconds` 优先 |
-| `size` / `metadata.resolution` | `resolution` | `metadata.resolution` 优先；`size` 支持 `720x1280` 或 `720p` |
+| `size` / `metadata.resolution` | `resolution` | 须为官方枚举 `480p`/`720p`/`1080p`/`4k`；`metadata.resolution` 优先；不支持像素串 |
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16` |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
@@ -204,8 +204,8 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   时长整数，兼容 OpenAI Video 客户端。若同时传 `seconds`，以 `seconds` 为准。
 </ParamField>
 
-<ParamField body="size" type="string" default="480x854">
-  分辨率或像素尺寸，如 `1080x1920`、`720x1280`、`480x854`，或直接传 `480p` / `720p` / `1080p`。
+<ParamField body="size" type="string" default="720p">
+  官方分辨率枚举：`480p`、`720p`、`1080p`、`4k`（仅标准版）。与 `metadata.resolution` 等价；不支持像素串。
 </ParamField>
 
 <ParamField body="images" type="string[]">
@@ -217,7 +217,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
-  输出分辨率 `480p` / `720p` / `1080p`，优先级高于 `size`。
+  输出分辨率 `480p` / `720p` / `1080p` / `4k`，优先级高于 `size`。
 </ParamField>
 
 <ParamField body="metadata.ratio" type="string">
