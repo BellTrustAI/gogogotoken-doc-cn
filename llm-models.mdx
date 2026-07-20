@@ -1,0 +1,176 @@
+---
+title: "通用大模型（Kimi / GLM / DeepSeek）"
+sidebarTitle: "通用大模型"
+description: "通过 OpenAI Chat Completions 调用 Kimi、智谱 GLM、DeepSeek；按令牌分组开通"
+icon: "bot"
+api: "POST https://gogogotoken.com/v1/chat/completions"
+---
+
+通过 OpenAI Chat Completions 兼容接口调用 **Kimi**、**智谱 GLM**、**DeepSeek**。创建 API Key 时请选择对应令牌分组，否则无法调用该组模型。
+
+| 令牌分组 | 支持模型 |
+| --- | --- |
+| `LLM - Kimi` | `kimi-k2.5`、`kimi-k2.6`、`kimi-k2.7-code`、`kimi-k3` |
+| `LLM - GLM` | `glm-5.1`、`glm-5.2` |
+| `LLM - DeepSeek` | `deepseek-v4-pro` |
+
+<Note>
+  豆包 Seed 对话模型见 [豆包对话模型](/chat-models)，与上表分组相互独立。实际是否可用以控制台「定价」页为准。
+</Note>
+
+## 快速示例
+
+<RequestExample>
+```bash Kimi
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kimi-k2.6",
+    "max_completion_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "你好，你是什么模型？一句话回答" }
+    ]
+  }'
+```
+
+```bash GLM
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "glm-5.2",
+    "max_completion_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "你好，你是什么模型？一句话回答" }
+    ]
+  }'
+```
+
+```bash DeepSeek
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-v4-pro",
+    "max_completion_tokens": 256,
+    "messages": [
+      { "role": "user", "content": "你好，你是什么模型？一句话回答" }
+    ]
+  }'
+```
+</RequestExample>
+
+## 参考单价（元 / 百万 token）
+
+以下为平台挂牌参考价（输入 / 输出 / 缓存命中）。若令牌分组配置了倍率，实收 = 挂牌价 × 分组倍率。以控制台定价为准。
+
+### LLM - Kimi
+
+| 模型 | 输入 | 输出 | 缓存命中 |
+| --- | ---: | ---: | ---: |
+| `kimi-k2.5` | ¥4.00 | ¥21.00 | ¥0.40 |
+| `kimi-k2.6` | ¥6.50 | ¥27.00 | ¥1.10 |
+| `kimi-k2.7-code` | ¥6.50 | ¥27.00 | ¥1.30 |
+| `kimi-k3` | ¥20.00 | ¥100.00 | ¥2.00 |
+
+### LLM - GLM
+
+| 模型 | 输入 | 输出 | 缓存命中 |
+| --- | ---: | ---: | ---: |
+| `glm-5.1` | ¥8.00 | ¥28.00 | ¥2.00 |
+| `glm-5.2` | ¥8.00 | ¥28.00 | ¥2.00 |
+
+### LLM - DeepSeek
+
+| 模型 | 输入 | 输出 | 缓存命中 |
+| --- | ---: | ---: | ---: |
+| `deepseek-v4-pro` | ¥12.00 | ¥24.00 | ¥1.00 |
+
+## 思考（thinking）默认行为
+
+请求未传思考相关字段时，平台会按模型补默认参数；**你显式传入的字段不会被覆盖**。
+
+| 模型 | 默认 | 如何开关 |
+| --- | --- | --- |
+| `kimi-k2.5`、`kimi-k2.6` | 开思考 | 关：`"thinking": { "type": "disabled" }` |
+| `kimi-k2.7-code`、`kimi-k3` | **强制开思考**，不可关 | 建议 `max_completion_tokens` ≥ 4096，避免思考占满额度导致正文截断 |
+| `glm-5.1`、`glm-5.2` | 开思考 | 关：`"thinking": { "type": "disabled" }`；`glm-5.2` 关思考时请同时带 `"reasoning_effort": "none"` |
+| `deepseek-v4-pro` | **关思考** | 开：`"enable_thinking": true`，并建议加大 `max_completion_tokens` |
+
+### 关思考示例（GLM-5.2）
+
+```bash
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "glm-5.2",
+    "max_completion_tokens": 256,
+    "thinking": { "type": "disabled" },
+    "reasoning_effort": "none",
+    "messages": [
+      { "role": "user", "content": "用一句话介绍你自己" }
+    ]
+  }'
+```
+
+### 开思考示例（DeepSeek）
+
+```bash
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-v4-pro",
+    "max_completion_tokens": 4096,
+    "enable_thinking": true,
+    "messages": [
+      { "role": "user", "content": "用一句话介绍你自己" }
+    ]
+  }'
+```
+
+<Tip>
+  开思考时，输出预算会被推理内容占用。短回答场景请提高 `max_completion_tokens`，或显式关闭思考。
+</Tip>
+
+## 参数说明
+
+<ParamField header="Authorization" type="string" required>
+  API Key 鉴权，格式 `Bearer YOUR_API_KEY`。Key 所属分组须覆盖目标模型。
+</ParamField>
+
+<ParamField body="model" type="string" required>
+  模型 ID，见上方各分组支持列表。
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  OpenAI 兼容消息数组，每项含 `role` 与 `content`。
+</ParamField>
+
+<ParamField body="max_completion_tokens" type="integer">
+  本次回复最大输出 token（含思考 token）。开思考时建议适当加大。
+</ParamField>
+
+<ParamField body="stream" type="boolean" default={false}>
+  设为 `true` 时以 SSE 流式返回。
+</ParamField>
+
+<ParamField body="thinking" type="object">
+  Kimi / GLM 思考开关，例如 `{ "type": "enabled" }` 或 `{ "type": "disabled" }`。
+</ParamField>
+
+<ParamField body="enable_thinking" type="boolean">
+  DeepSeek 思考开关。未传时平台默认 `false`。
+</ParamField>
+
+<ParamField body="reasoning_effort" type="string">
+  与 GLM 关思考配合使用；`glm-5.2` 关闭思考时请设为 `none`。
+</ParamField>
+
+## 相关页面
+
+- [认证说明](/auth) — Base URL、鉴权与令牌分组
+- [计费说明](/billing) — 全产品线结算概览
+- [豆包对话模型](/chat-models) — Seed 系列对话

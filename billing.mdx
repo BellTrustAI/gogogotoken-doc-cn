@@ -1,7 +1,7 @@
 ---
 title: "计费说明"
 sidebarTitle: "计费说明"
-description: "Seedance、Kling、Seedream 与素材接口的计费与结算说明"
+description: "Seedance、Kling、Seedream、通用大模型与素材接口的计费与结算说明"
 icon: "receipt"
 ---
 
@@ -104,9 +104,21 @@ icon: "receipt"
 
 `CreateAsset` 用于将公网图片/视频 URL 登记到素材组，便于在图生视频中引用 `asset://`。详见 [素材管理](/assets)。
 
+## 通用大模型（按 Token 计费）
+
+Kimi / 智谱 GLM / DeepSeek 通过 `POST /v1/chat/completions` 调用，按输入、输出与缓存命中 token 计费。创建令牌时选择对应分组：
+
+| 分组 | 代表模型 | 挂牌参考（入 / 出 / 缓存，元/百万 token） |
+| --- | --- | --- |
+| `LLM - Kimi` | `kimi-k2.6` | ¥6.50 / ¥27.00 / ¥1.10 |
+| `LLM - GLM` | `glm-5.2` | ¥8.00 / ¥28.00 / ¥2.00 |
+| `LLM - DeepSeek` | `deepseek-v4-pro` | ¥12.00 / ¥24.00 / ¥1.00 |
+
+完整价目与思考默认行为见 [通用大模型](/llm-models)。若分组配置了倍率，实收 = 挂牌价 × 分组倍率。
+
 ## 豆包对话模型（按 Token 计费）
 
-`doubao-seed-2.0-pro` 等对话模型通过 `POST /v1/chat/completions` 调用，按输入与输出 token 计费。`doubao-seed-2.0-pro` 按上下文长度分档计价。详见 [对话模型](/chat-models)。
+`doubao-seed-2.0-pro` 等对话模型通过 `POST /v1/chat/completions` 调用，按输入与输出 token 计费。`doubao-seed-2.0-pro` 按上下文长度分档计价。详见 [豆包对话模型](/chat-models)。
 
 ## 结算方式
 

@@ -24,7 +24,19 @@ Content-Type: application/json
 
 1. 注册并登录 [gogogotoken.com](https://gogogotoken.com)
 2. 进入控制台的 API Keys 页面
-3. 创建 Key，按需设置分组、模型限制与配额
+3. 创建 Key，按需设置**分组**、模型限制与配额
+
+### 常用令牌分组（对话）
+
+| 分组 | 用途 |
+| --- | --- |
+| `LLM - Kimi` | Kimi：`kimi-k2.5` / `kimi-k2.6` / `kimi-k2.7-code` / `kimi-k3` |
+| `LLM - GLM` | 智谱：`glm-5.1` / `glm-5.2` |
+| `LLM - DeepSeek` | DeepSeek：`deepseek-v4-pro` |
+
+调用某模型时，API Key 所属分组必须已开通该模型。详见 [通用大模型](/llm-models)。
+
+豆包 Seed 对话、Seedance / Kling 视频等使用各自对应分组，与上表相互独立。
 
 <Warning>
   请妥善保管 API Key，不要提交到公开仓库、前端代码或日志系统中。

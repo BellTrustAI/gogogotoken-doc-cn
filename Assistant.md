@@ -32,6 +32,25 @@
 - 代码 SSOT：`gotoken-api/relay/channel/task/kling/tokenhub.go`（`tokenHubMaxCreditsByModel`）。
 - 用户文档勿写渠道 ID、上游 sk、ModelRatio 内部键名。
 
+### 国内通用大模型（Kimi / GLM / DeepSeek）— 用户文档 `llm-models.mdx`
+
+令牌分组（UserUsableGroups）与挂牌价（¥/M，GroupRatio 默认 1）：
+
+| 分组 | 模型 | 入 / 出 / 缓存 |
+| --- | --- | --- |
+| `LLM - Kimi` | `kimi-k2.5` | 4 / 21 / 0.4 |
+| | `kimi-k2.6` | 6.5 / 27 / 1.1 |
+| | `kimi-k2.7-code` | 6.5 / 27 / 1.3 |
+| | `kimi-k3` | 20 / 100 / 2 |
+| `LLM - GLM` | `glm-5.1`、`glm-5.2` | 8 / 28 / 2 |
+| `LLM - DeepSeek` | `deepseek-v4-pro` | 12 / 24 / 1 |
+
+- 国内公式：`ModelRatio = 挂牌输入 ÷ 2`；`CompletionRatio = 输出÷输入`；`CacheRatio = 缓存÷输入`。
+- thinking 默认由各渠道 `param_override` 注入（未传才补）：Kimi/GLM 默认开思考；`kimi-k2.7-code`/`kimi-k3` 强制开；DeepSeek 默认 `enable_thinking=false`。
+- `glm-5.1` 上游映射 `xopglm51`（用户侧仍用 `glm-5.1`）。
+- **已废弃**：`General - LLM`（勿再写进文档或新建令牌）。
+- 用户文档禁止出现：渠道 ID、上游 host/key、ModelRatio 数值。
+
 ### 国内（火山）— 用户文档 `video-models.mdx`
 
 官方价（CNY/M output tokens，2026-06）：
@@ -76,6 +95,7 @@ mini **不支持 1080p**。
 1. 改价：先改 `gotoken-api` `volc*` 常量 + 单测，再更新国内 DB `options.ModelRatio` baseline 两项，再改 `video-models.mdx`。
 2. **不要**把海外 USD 价写进国内 MDX，也不要用汇率换算填国内表。
 3. 用户文档禁止出现：ModelRatio 数值、AK/SK、内部项目名、渠道 ID。
+4. 改通用 LLM 价目 / 分组名：同步 `llm-models.mdx`、`billing.mdx`、`auth.mdx`，并更新本文件「国内通用大模型」表。
 
 ## 文档页面索引
 
@@ -88,6 +108,7 @@ mini **不支持 1080p**。
 | `assets.mdx` | 素材管理（CreateAsset ¥0.10/次） |
 | `images.mdx` | Seedream 按张计费 |
 | `chat-models.mdx` | Seed 对话 + 2.0-pro 分档 |
+| `llm-models.mdx` | Kimi / GLM / DeepSeek 通用大模型 + 令牌分组 + 挂牌价 |
 | `billing.mdx` | 全产品线计费汇总 |
 | `video-tools.mdx` | 控制台工具说明 |
 | `kling-models.mdx` | Kling 模型 + TokenHub 积分价目 |
@@ -98,6 +119,7 @@ mini **不支持 1080p**。
 
 | 日期 | 说明 |
 | --- | --- |
+| 2026-07-21 | 新增 `llm-models.mdx`（LLM - Kimi / GLM / DeepSeek）；更新 introduction / auth / billing / docs.json；废弃 General - LLM |
 | 2026-07-08 | 新增 Kling TokenHub 文档三页；修正 kling-tasks 查询响应为 TaskDto（大写 status）；aspect_ratio 默认 1:1；补充分组倍率/失败全额退款说明 |
 | 2026-07-07 | 新增 mini / Seedream CNY 短模型名 / CreateAsset 计费 / chat-models 豆包对话页；修复 auth.mdx frontmatter |
 | 2026-06-27 | 细化 video-models 分档表与「媒体输入」定义；补充 Assistant 与国内/海外价目分离说明 |
