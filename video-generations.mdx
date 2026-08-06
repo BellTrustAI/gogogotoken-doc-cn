@@ -6,7 +6,7 @@ icon: "video"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
 
-视频生成是异步任务。提交后接口会立即返回 `task_id`，需要通过 [任务查询](/video-tasks) 轮询获取结果。
+视频生成是异步任务。提交后接口会立即返回 `task_id`，可以通过 [任务查询](/video-tasks) 轮询获取结果，也可以传入 `callback_url` 由上游主动推送结果（免轮询，见下文「回调通知」）。
 
 <Note>
   本文档即 **SD2 官方用法**。`prompt`、`seconds`、`images`、`metadata.*` 等字段由平台转换为 ARK 上游请求体，语义与豆包 Seedance 2.0 一致。
@@ -64,7 +64,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 ## 接口说明
 
 <Note>
-  通常需要 30-120 秒生成完成。建议每 5-8 秒轮询一次。
+  通常需要 30-120 秒生成完成。建议每 5-8 秒轮询一次；传入 `callback_url` 时无需轮询。
 </Note>
 
 ## 文生视频
@@ -164,6 +164,30 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16` |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
+| `callback_url` | `callback_url` | 回调通知地址，原样透传 |
+
+## 回调通知（callback_url，免轮询）
+
+提交任务时传入 `callback_url`，任务状态变化（排队 → 运行 → 成功/失败）时上游会主动向该地址 POST 推送任务结果，无需轮询。回调请求体的结构与 [任务查询](/video-tasks) 接口的返回一致（含 `id`、`status`、`content.video_url`、`usage` 等字段），与豆包官方行为对齐。
+
+```bash
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-0-fast",
+    "prompt": "一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进",
+    "seconds": "5",
+    "size": "480p",
+    "callback_url": "https://your-server.com/callback"
+  }'
+```
+
+<Note>
+  - 回调地址必须公网可达，并正常返回 2xx 响应。
+  - 回调由上游直接发送到你的服务器，不经过平台转发；推送体中的 `id` 是上游任务 ID（`cgt-` 前缀），与本接口提交响应中的 `task_id` 是同一任务。如需校验真伪，可用提交响应的 `task_id` 调 [任务查询](/video-tasks) 交叉核对状态。
+  - 回调与轮询可以混用，互不影响。
+</Note>
 
 ## 提交响应
 
@@ -210,6 +234,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 
 <ParamField body="images" type="string[]">
   公网图片 URL 列表，用于简单图生视频。多模态或需指定首帧/参考角色时，请使用 `metadata.content`。
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  回调通知地址。传入后任务状态变化时上游主动向该地址 POST 推送结果，免轮询；详见上文「回调通知」。
 </ParamField>
 
 <ParamField body="metadata" type="object">
