@@ -1,7 +1,7 @@
 ---
 title: "视频生成"
 sidebarTitle: "文生与图生视频"
-description: "提交 Seedance 2.0 文生视频和图生视频任务"
+description: "提交 Seedance 2.0 / 2.5 文生视频和图生视频任务"
 icon: "video"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
@@ -9,7 +9,7 @@ api: "POST https://gogogotoken.com/v1/video/generations"
 视频生成是异步任务。提交后接口会立即返回 `task_id`，可以通过 [任务查询](/video-tasks) 轮询获取结果，也可以传入 `callback_url` 由上游主动推送结果（免轮询，见下文「回调通知」）。
 
 <Note>
-  本文档即 **SD2 官方用法**。`prompt`、`seconds`、`images`、`metadata.*` 等字段由平台转换为 ARK 上游请求体，语义与豆包 Seedance 2.0 一致。
+  本文档即 **Seedance 官方用法**（2.0 / 2.5）。`prompt`、`seconds`、`images`、`metadata.*` 等字段由平台转换为 ARK 上游请求体。模型价目与能力差异见 [视频模型列表](/video-models)。
 </Note>
 
 <RequestExample>
@@ -35,6 +35,22 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "images": ["https://assets.example.com/product-watch.jpg"],
     "seconds": "5",
     "size": "720p"
+  }'
+```
+
+```bash Seedance 2.5 文生 720p
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-5",
+    "prompt": "海边日出，镜头缓慢推进，海浪拍打礁石",
+    "seconds": "8",
+    "size": "720p",
+    "metadata": {
+      "output_format": "mp4",
+      "ratio": "16:9"
+    }
   }'
 ```
 </RequestExample>
@@ -159,9 +175,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `prompt` | `content[]` 中 `type: "text"` | 必填 |
 | `images[]` | `content[]` 中 `type: "image_url"` | 简单图生，不带 `role` |
 | `metadata.content[]` | `content[]` | 多模态；含 `role` 时与官方一致 |
-| `seconds` / `duration` | `duration` | `seconds` 优先 |
-| `size` / `metadata.resolution` | `resolution` | 须为官方枚举 `480p`/`720p`/`1080p`/`4k`；`metadata.resolution` 优先；不支持像素串 |
-| `metadata.ratio` | `ratio` | 如 `16:9`、`9:16` |
+| `seconds` / `duration` | `duration` | `seconds` 优先；也支持 `-1`（智能时长）。**2.5** 合法范围为 `4–30` 或 `-1` |
+| `size` / `metadata.resolution` | `resolution` | 官方枚举；`metadata.resolution` 优先；不支持像素串。**2.5** 仅 `480p`/`720p` |
+| `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
+| `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
 | `callback_url` | `callback_url` | 回调通知地址，原样透传 |
@@ -213,7 +230,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="model" type="string" required default="doubao-seedance-2-0-fast">
-  视频模型 ID。Token 计费：`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`（mini 不支持 1080p）。
+  视频模型 ID。Token 计费：`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`（fast/mini/2.5 不支持 1080p）。
 </ParamField>
 
 <ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
@@ -221,15 +238,15 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="seconds" type="string" default="5">
-  视频时长（秒），传字符串如 `"5"`。优先于顶层 `duration`。
+  视频时长（秒），传字符串如 `"5"`。优先于顶层 `duration`。也可传 `"-1"` 智能时长。**2.5** 为 `4–30` 或 `-1`。
 </ParamField>
 
 <ParamField body="duration" type="number">
-  时长整数，兼容 OpenAI Video 客户端。若同时传 `seconds`，以 `seconds` 为准。
+  时长整数，兼容 OpenAI Video 客户端。若同时传 `seconds`，以 `seconds` 为准；支持 `-1`。
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">
-  官方分辨率枚举：`480p`、`720p`、`1080p`、`4k`（仅标准版）。与 `metadata.resolution` 等价；不支持像素串。
+  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；fast / mini / **2.5** 仅 `480p`/`720p`。与 `metadata.resolution` 等价；不支持像素串。
 </ParamField>
 
 <ParamField body="images" type="string[]">
@@ -241,19 +258,23 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="metadata" type="object">
-  SD2 扩展参数，字段名与上游 ARK 一致，放在 `metadata` 下提交：`content`、`resolution`、`ratio`、`generate_audio`、`return_last_frame`、`seed` 等。
+  扩展参数，字段名与上游 ARK 一致：`content`、`resolution`、`ratio`、`output_format`（2.5）、`generate_audio`、`return_last_frame`、`seed` 等。
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
-  输出分辨率 `480p` / `720p` / `1080p` / `4k`，优先级高于 `size`。
+  输出分辨率，优先级高于 `size`。2.5 仅 `480p` / `720p`。
 </ParamField>
 
 <ParamField body="metadata.ratio" type="string">
-  宽高比，如 `16:9`、`9:16`。
+  宽高比，如 `16:9`、`9:16`、`adaptive`。首尾帧 / 编辑 / 延长任务建议 `adaptive`。
+</ParamField>
+
+<ParamField body="metadata.output_format" type="string">
+  **仅 Seedance 2.5**：输出封装 `mp4`（默认）或 `mov`。
 </ParamField>
 
 <ParamField body="metadata.content" type="object[]">
-  多模态输入数组。每项含 `type`（`image_url` / `video_url` / `audio_url`）、对应 URL 对象，以及可选 `role`（见上文 role 表）。
+  多模态输入数组。每项含 `type`（`image_url` / `video_url` / `audio_url`）、对应 URL 对象，以及可选 `role`（见上文 role 表）。2.5 素材上限约图 ≤30 / 视频 ≤10 / 音频 ≤10（合计 ≤50）。
 </ParamField>
 
 ## 响应体

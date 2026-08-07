@@ -7,11 +7,20 @@ icon: "receipt"
 
 本站按模型类型采用不同计费方式：**Seedance 视频按输出 token 据实结算**、**Kling 视频按上游积分据实结算**、**图片按张固定价**、**素材登记按次少量计费**。实际扣费以控制台日志为准。
 
-## Seedance 2.0 视频（Token 计费）
+## Seedance 视频（Token 计费）
 
-`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 按输出 token 据实计费。提交时按**请求声明的分辨率**与是否含媒体输入预扣额度；任务成功后按上游返回的 `completion_tokens` 与**实际生成分辨率档**差额结算（多退少补）。
+`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 按输出 token 据实计费。提交时按请求声明的分辨率与计费分档预扣额度；任务成功后按上游返回的 `completion_tokens` 差额结算（多退少补）。
 
-参考：[火山引擎 Seedance 2.0 计费文档](https://www.volcengine.com/docs/82379/1544106?lang=zh#02affcb8)
+参考：[火山引擎模型计费文档](https://www.volcengine.com/docs/82379/1544106?lang=zh#02affcb8)
+
+### doubao-seedance-2-5
+
+仅 480p / 720p（同价）。分档依据是否含**视频文件**输入（图生走「无视频输入」档）。
+
+| 场景 | CNY / 百万 token |
+| --- | --- |
+| 无视频输入 | 70.00 元 |
+| 有视频输入 | 42.00 元 |
 
 ### doubao-seedance-2-0
 
@@ -44,6 +53,13 @@ icon: "receipt"
 </Note>
 
 ### 示例计算
+
+`doubao-seedance-2-5`，720p 无视频输入，生成 200,000 tokens：
+
+```text
+参考费用 = 200000 / 1,000,000 × 70.00
+        = ¥14.00
+```
 
 `doubao-seedance-2-0-mini`，480p 不含视频，生成 108,900 tokens：
 

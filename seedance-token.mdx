@@ -1,15 +1,15 @@
 ---
-title: "Seedance 2.0 Token 计费"
+title: "Seedance Token 计费"
 sidebarTitle: "Token 计费"
-description: "使用 doubao-seedance-2-0 系列模型提交并查询按 token 计费的视频任务"
+description: "使用 doubao-seedance-2-0 / 2-5 系列模型提交并查询按 token 计费的视频任务"
 icon: "coins"
 api: "POST https://gogogotoken.com/v1/video/generations"
 ---
 
-`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 走 **ARK Token 计费**。提交与查询均使用 SD2 主路径 `/v1/video/generations`。
+`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 走 **ARK Token 计费**。提交与查询均使用主路径 `/v1/video/generations`。
 
 <Note>
-  **预扣与结算**：提交时按请求声明的分辨率与是否含媒体输入预扣额度；任务成功后读取 `data.data.usage.completion_tokens`，并按上游**实际生成分辨率档**重新计价，多退少补。价目分档见 [视频模型列表](/video-models) 与 [计费说明](/billing)。
+  **预扣与结算**：提交时按请求声明的分辨率与计费分档预扣额度；任务成功后读取 `data.data.usage.completion_tokens`，并按上游实际结果重新计价，多退少补。价目分档见 [视频模型列表](/video-models) 与 [计费说明](/billing)。
 </Note>
 
 <RequestExample>
@@ -47,6 +47,21 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "prompt": "产品特写缓慢旋转，简洁白底棚拍",
     "seconds": "5",
     "size": "480p"
+  }'
+```
+
+```bash Seedance 2.5 720p
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-5",
+    "prompt": "海边日出，镜头缓慢推进",
+    "seconds": "8",
+    "size": "720p",
+    "metadata": {
+      "output_format": "mp4"
+    }
   }'
 ```
 </RequestExample>
@@ -90,13 +105,13 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ```
 
 <Note>
-  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast` 与 `doubao-seedance-2-0-mini` 不支持 `1080p` / `4k`，传对应档位会被服务端拒绝。
+  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`、`doubao-seedance-2-5` 不支持 `1080p` / `4k`，传对应档位会被服务端拒绝。
 </Note>
 
 ## 参数说明
 
 <ParamField body="model" type="string" required default="doubao-seedance-2-0">
-  Token 计费模型：`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 或 `doubao-seedance-2-0-mini`。带 `-480p` 等后缀的别名模型按秒计费。
+  Token 计费模型：`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast` 或 `doubao-seedance-2-0-mini`。带 `-480p` 等后缀的别名模型按秒计费。
 </ParamField>
 
 <ParamField body="prompt" type="string" required default="a premium smartwatch rotating on a clean studio pedestal, soft product lighting, slow camera push-in">
@@ -104,11 +119,11 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 </ParamField>
 
 <ParamField body="seconds" type="string" default="5">
-  视频时长，传字符串如 `"5"`。用于生成请求，**不参与 token 计费乘算**。
+  视频时长，传字符串如 `"5"` 或 `"-1"`。用于生成请求，**不参与 token 计费乘算**。2.5 合法范围 `4–30` 或 `-1`。
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">
-  官方分辨率枚举：`480p`、`720p`、`1080p`、`4k`（仅 `doubao-seedance-2-0`）。与 `metadata.resolution` 等价，后者优先。不支持像素串（如 `1280x720`）。
+  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；fast / mini / **2.5** 仅 `480p`/`720p`。与 `metadata.resolution` 等价，后者优先。不支持像素串（如 `1280x720`）。
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
