@@ -20,6 +20,10 @@ Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实�
 | `doubao-seedance-2-0-fast` | 更快、成本更低 | 720p | 同上 | 支持 |
 | `doubao-seedance-2-0-mini` | 轻量版，适合低成本预览与批量试片 | 720p | 同上 | 不支持 |
 
+<Warning>
+  Fast / Mini **只属于 2.0**。请勿提交 `doubao-seedance-2-5-fast` / `doubao-seedance-2-5-mini`——网关返回 **400** + `model_not_found`，**不会**静默回退到其他模型。当前 Key 可用模型以 [`GET /v1/models`](/auth#list-models) 为准。
+</Warning>
+
 ## 官方单价（CNY / 百万 output tokens）
 
 ### `doubao-seedance-2-5`

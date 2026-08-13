@@ -8,6 +8,8 @@ api: "POST https://gogogotoken.com/v1/videos"
 
 OpenAI 兼容视频接口与 `/v1/video/generations` 行为一致，便于迁移使用 OpenAI Video API 格式的客户端。
 
+超时重试可带 `Idempotency-Key`（与主路径相同，见 [视频生成 · 幂等提交](/video-generations#idempotency)）；响应丢失可用 [`GET /v1/video/generations?request_id=`](/video-tasks#lookup-by-request-id) 找回。
+
 <RequestExample>
 ```bash 提交任务
 curl -X POST https://gogogotoken.com/v1/videos \

@@ -38,6 +38,42 @@ Content-Type: application/json
 
 豆包 Seed 对话、Seedance / Kling 视频等使用各自对应分组，与上表相互独立。
 
+## 用 Key 查询当前分组与可用模型 {#list-models}
+
+`GET /v1/models` 会按**当前 API Key** 返回可用模型列表，并附带令牌元数据，便于适配器识别「这把 Key 落在哪个组」：
+
+```bash
+curl https://gogogotoken.com/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json
+{
+  "success": true,
+  "object": "list",
+  "token_name": "控制台中的令牌名称",
+  "group": "令牌分组名",
+  "group_description": "用户可用分组中的描述文案",
+  "groups": ["令牌分组名"],
+  "data": [
+    { "id": "doubao-seedance-2-5", "object": "model", "owned_by": "..." }
+  ]
+}
+```
+
+| 字段 | 说明 |
+| --- | --- |
+| `token_name` | 控制台里该令牌的名称 |
+| `group` | 当前生效分组；令牌为 `auto` 时值为 `"auto"` |
+| `group_description` | 分组描述（取自后台「用户可用分组」；未配置则回落为组名） |
+| `groups` | 本次列表实际展开的分组；固定组通常只有一项，`auto` 可能多项 |
+| `group_descriptions` | 仅 `auto` 时出现：各组名 → 描述 |
+| `data` | 该 Key 在生效分组下可用、且已配置计费的模型（若令牌开了模型白名单，则只含白名单内模型） |
+
+<Tip>
+  Seedance / GPT Image 等多档位令牌可用此接口确认分组与模型清单，无需再维护多套本地配置。
+</Tip>
+
 <Warning>
   请妥善保管 API Key，不要提交到公开仓库、前端代码或日志系统中。
 </Warning>

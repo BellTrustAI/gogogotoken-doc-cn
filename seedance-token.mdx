@@ -12,6 +12,10 @@ api: "POST https://gogogotoken.com/v1/video/generations"
   **预扣与结算**：提交时按请求声明的分辨率与计费分档预扣额度；任务成功后读取 `data.data.usage.completion_tokens`，并按上游实际结果重新计价，多退少补。价目分档见 [视频模型列表](/video-models) 与 [计费说明](/billing)。
 </Note>
 
+<Tip>
+  超时重试请带 [`Idempotency-Key`](/video-generations#idempotency)；响应丢失可用 [`GET ...?request_id=`](/video-tasks#lookup-by-request-id) 找回，避免重复预扣。
+</Tip>
+
 <RequestExample>
 ```bash 文生视频 1080p
 curl -X POST https://gogogotoken.com/v1/video/generations \

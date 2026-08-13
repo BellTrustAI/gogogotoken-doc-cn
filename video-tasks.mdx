@@ -1,12 +1,12 @@
 ---
 title: "任务查询与轮询"
 sidebarTitle: "任务查询"
-description: "通过 task_id 查询视频生成任务状态与结果"
+description: "通过 task_id 或 request_id 查询 / 找回视频生成任务"
 icon: "refresh-cw"
 api: "GET https://gogogotoken.com/v1/video/generations/{task_id}"
 ---
 
-视频生成任务提交后，通过 `task_id` 轮询查询任务状态与生成结果。**SD2 推荐路径**：`GET /v1/video/generations/{task_id}`。
+视频生成任务提交后，通过 `task_id` 轮询查询任务状态与生成结果。**SD2 推荐路径**：`GET /v1/video/generations/{task_id}`。若提交响应丢失，可用创建时响应头中的 `X-Oneapi-Request-Id` 做 [按 request_id 找回](#lookup-by-request-id)。
 
 <Note>
   两种查询路径返回结构不同，请与提交路径保持一致：
@@ -17,6 +17,11 @@ api: "GET https://gogogotoken.com/v1/video/generations/{task_id}"
 <RequestExample>
 ```bash SD2 主路径
 curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```bash 按 request_id 找回
+curl "https://gogogotoken.com/v1/video/generations?request_id=YOUR_X_ONEAPI_REQUEST_ID" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 </RequestExample>
@@ -79,6 +84,30 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 
 <ParamField header="Authorization" type="string" required>
   API Key 鉴权信息，格式为 `Bearer YOUR_API_KEY`。
+</ParamField>
+
+## 按 request_id 找回任务 {#lookup-by-request-id}
+
+提交接口超时、客户端未读到 body，但服务端可能已创建成功时：
+
+```
+GET /v1/video/generations?request_id=<X-Oneapi-Request-Id>
+```
+
+| 项 | 说明 |
+|---|---|
+| `request_id` | 必填。取自**首次创建**响应头 `X-Oneapi-Request-Id` |
+| 有效期 | 约 **24 小时** |
+| 权限 | 仅能查到**当前 API Key 所属用户**自己的任务 |
+| 成功响应 | 与幂等重放相同形态的 OpenAI Video 任务对象（含 `id` / `task_id`）；响应头可能含 `X-Idempotency-Replayed: true` |
+| 未找到 | HTTP **404**，`task_not_found`（过期、未落库，或无 task_id 的失败创建） |
+
+<Tip>
+  生产集成优先在提交时带 [`Idempotency-Key`](/video-generations#idempotency)，用同一业务键重试即可拿回原任务；`request_id` 找回适合「没带幂等键、但保存了响应头」的补救路径。
+</Tip>
+
+<ParamField query="request_id" type="string">
+  网关请求 ID。与路径参数 `task_id` 二选一场景使用：本接口为查询串形式，无 path 中的 task_id。
 </ParamField>
 
 ## 响应体（`/v1/video/generations/{task_id}`）

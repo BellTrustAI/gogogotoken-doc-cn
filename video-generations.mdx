@@ -12,6 +12,10 @@ api: "POST https://gogogotoken.com/v1/video/generations"
   本文档即 **Seedance 官方用法**（2.0 / 2.5）。`prompt`、`seconds`、`images`、`metadata.*` 等字段由平台转换为 ARK 上游请求体。模型价目与能力差异见 [视频模型列表](/video-models)。
 </Note>
 
+<Tip>
+  **超时重试 / 响应丢失**：提交时建议带 `Idempotency-Key`（见下文）；也可保存响应头 `X-Oneapi-Request-Id`，用 [按 request_id 找回](/video-tasks#lookup-by-request-id) 查回 `task_id`。二者均约 **24 小时**有效，且不会重复预扣。
+</Tip>
+
 <RequestExample>
 ```bash 文生视频
 curl -X POST https://gogogotoken.com/v1/video/generations \
@@ -51,6 +55,19 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
       "output_format": "mp4",
       "ratio": "16:9"
     }
+  }'
+```
+
+```bash 带幂等键（防超时重复提交）
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: order-20260813-abc123" \
+  -d '{
+    "model": "doubao-seedance-2-5",
+    "prompt": "海边日出，镜头缓慢推进",
+    "seconds": "8",
+    "size": "720p"
   }'
 ```
 </RequestExample>
@@ -219,6 +236,26 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 }
 ```
 
+请同时保存响应头中的 `X-Oneapi-Request-Id`（网关本次请求 ID）。若客户端超时未读到 body，可用该值做 [按 request_id 找回](/video-tasks#lookup-by-request-id)。
+
+## 幂等提交（推荐） {#idempotency}
+
+客户端网络抖动或超时重试时，同一业务单号可能多次 POST。请在请求头携带稳定业务键：
+
+| 请求头 | 说明 |
+|---|---|
+| `Idempotency-Key` | 推荐。同用户、同键在约 **24 小时**内再次提交，直接返回**原任务**（不会再次调用上游、不会重复预扣） |
+| `X-Idempotency-Key` | 与上等价的别名 |
+
+重放成功时响应头含：
+
+- `X-Idempotency-Replayed: true`
+- `X-Idempotency-Original-Request-Id`：首次创建时的网关 request id（若有）
+
+<Warning>
+  仅**创建成功并已落库 task_id** 的请求可被重放或找回。无 `task_id` 的失败响应不要当成排队成功；换键重试前请确认业务是否应新建任务。
+</Warning>
+
 ## 参数说明
 
 <ParamField header="Authorization" type="string" required>
@@ -227,6 +264,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 
 <ParamField header="Content-Type" type="string" required>
   固定为 `application/json`。
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string">
+  可选。客户端幂等键；亦可用 `X-Idempotency-Key`。同用户同键约 24 小时内重放原 `task_id`，不重复扣费。详见上文「幂等提交」。
 </ParamField>
 
 <ParamField body="model" type="string" required default="doubao-seedance-2-0-fast">
