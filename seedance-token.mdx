@@ -68,6 +68,22 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     }
   }'
 ```
+
+```bash Seedance 2.5 1080p
+curl -X POST https://gogogotoken.com/v1/video/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "doubao-seedance-2-5",
+    "prompt": "海边日出，镜头缓慢推进，海浪拍打礁石",
+    "seconds": "8",
+    "size": "1080p",
+    "metadata": {
+      "output_format": "mp4",
+      "ratio": "16:9"
+    }
+  }'
+```
 </RequestExample>
 
 <ResponseExample>
@@ -109,7 +125,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ```
 
 <Note>
-  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`、`doubao-seedance-2-5` 不支持 `1080p` / `4k`，传对应档位会被服务端拒绝。
+  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 不支持 `1080p` / `4k`；`doubao-seedance-2-5` 支持到 `1080p`、不支持 `4k`。传不支持档位会被服务端拒绝。
 </Note>
 
 ## 参数说明
@@ -127,7 +143,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">
-  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；fast / mini / **2.5** 仅 `480p`/`720p`。与 `metadata.resolution` 等价，后者优先。不支持像素串（如 `1280x720`）。
+  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；`doubao-seedance-2-5` 支持 `480p` / `720p` / `1080p`；fast / mini 仅 `480p`/`720p`。与 `metadata.resolution` 等价，后者优先。不支持像素串（如 `1280x720`）。
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">

@@ -42,7 +42,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   }'
 ```
 
-```bash Seedance 2.5 文生 720p
+```bash Seedance 2.5 文生 1080p
 curl -X POST https://gogogotoken.com/v1/video/generations \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -50,7 +50,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "model": "doubao-seedance-2-5",
     "prompt": "海边日出，镜头缓慢推进，海浪拍打礁石",
     "seconds": "8",
-    "size": "720p",
+    "size": "1080p",
     "metadata": {
       "output_format": "mp4",
       "ratio": "16:9"
@@ -193,7 +193,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `images[]` | `content[]` 中 `type: "image_url"` | 简单图生，不带 `role` |
 | `metadata.content[]` | `content[]` | 多模态；含 `role` 时与官方一致 |
 | `seconds` / `duration` | `duration` | `seconds` 优先；也支持 `-1`（智能时长）。**2.5** 合法范围为 `4–30` 或 `-1` |
-| `size` / `metadata.resolution` | `resolution` | 官方枚举；`metadata.resolution` 优先；不支持像素串。**2.5** 仅 `480p`/`720p` |
+| `size` / `metadata.resolution` | `resolution` | 官方枚举；`metadata.resolution` 优先；不支持像素串。**2.5** 支持 `480p`/`720p`/`1080p`（不含 `4k`） |
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
 | `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
@@ -271,7 +271,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="model" type="string" required default="doubao-seedance-2-0-fast">
-  视频模型 ID。Token 计费：`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`（fast/mini/2.5 不支持 1080p）。
+  视频模型 ID。Token 计费：`doubao-seedance-2-5`、`doubao-seedance-2-0`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini`（fast/mini 不支持 1080p；2.5 支持到 1080p、不支持 4k）。
 </ParamField>
 
 <ParamField body="prompt" type="string" required default="一款智能手表在白色展示台上缓慢旋转，柔和棚拍光线，镜头平稳推进">
@@ -287,7 +287,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">
-  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；fast / mini / **2.5** 仅 `480p`/`720p`。与 `metadata.resolution` 等价；不支持像素串。
+  官方分辨率枚举。`doubao-seedance-2-0` 支持到 `4k`；`doubao-seedance-2-5` 支持 `480p` / `720p` / `1080p`；fast / mini 仅 `480p`/`720p`。与 `metadata.resolution` 等价；不支持像素串。
 </ParamField>
 
 <ParamField body="images" type="string[]">
@@ -303,7 +303,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </ParamField>
 
 <ParamField body="metadata.resolution" type="string">
-  输出分辨率，优先级高于 `size`。2.5 仅 `480p` / `720p`。
+  输出分辨率，优先级高于 `size`。2.5 支持 `480p` / `720p` / `1080p`（不含 `4k`）。
 </ParamField>
 
 <ParamField body="metadata.ratio" type="string">
