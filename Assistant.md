@@ -59,7 +59,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 档位 | ¥46 | ¥28 | ¥51 | ¥31 | ¥37 | ¥22 | ¥23 | ¥14 |
 
-mini **不支持 1080p**。
+mini **不支持 1080p**。`doubao-seedance-2-5` 支持到 **1080p**（不含 4k）；用户 MDX 只写 **list 原价** + 一句「限时促销对齐官方，具体以控制台账单为准」；**不要**写窗口、折扣比例或折后价。
 
 ### 后台 ModelRatio（国内，baseline 档）
 
@@ -119,6 +119,7 @@ mini **不支持 1080p**。
 
 | 日期 | 说明 |
 | --- | --- |
+| 2026-08-18 | Seedance 2.5 用户 MDX 促销文案收口：只保留「限时促销对齐官方，具体以控制台账单为准」，不写窗口/折扣 |
 | 2026-07-21 | 新增 `llm-models.mdx`（LLM - Kimi / GLM / DeepSeek）；更新 introduction / auth / billing / docs.json；废弃 General - LLM |
 | 2026-07-08 | 新增 Kling TokenHub 文档三页；修正 kling-tasks 查询响应为 TaskDto（大写 status）；aspect_ratio 默认 1:1；补充分组倍率/失败全额退款说明 |
 | 2026-07-07 | 新增 mini / Seedream CNY 短模型名 / CreateAsset 计费 / chat-models 豆包对话页；修复 auth.mdx frontmatter |
