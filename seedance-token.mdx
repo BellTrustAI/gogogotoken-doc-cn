@@ -158,6 +158,10 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
   高级多模态内容；含 `image_url` / `video_url` / `audio_url` 或 `asset://` 时按**含媒体输入**档计费。
 </ParamField>
 
+<ParamField body="metadata.omni_reference_task_type" type="string">
+  **仅 Seedance 2.5**：全模态参考任务的子类型引导，可选 `auto`（默认）、`reference`、`edit`、`extend`。显式指定后按对应子任务约束前置校验（`edit` 要求 `ratio=adaptive` 且 `duration=-1`；`extend` 要求 `ratio=adaptive`；`reference` 无特殊限制），减少异步报错。
+</ParamField>
+
 ## 响应体
 
 <ResponseField name="id" type="string">
