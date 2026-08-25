@@ -196,6 +196,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `size` / `metadata.resolution` | `resolution` | 官方枚举；`metadata.resolution` 优先；不支持像素串。**2.5** 支持 `480p`/`720p`/`1080p`（不含 `4k`） |
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
 | `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
+| `metadata.omni_reference_task_type` | `omni_reference_task_type` | **2.5**：`auto` / `reference` / `edit` / `extend`，原样透传 |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
 | `callback_url` | `callback_url` | 回调通知地址，原样透传 |
@@ -312,6 +313,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 
 <ParamField body="metadata.output_format" type="string">
   **仅 Seedance 2.5**：输出封装 `mp4`（默认）或 `mov`。
+</ParamField>
+
+<ParamField body="metadata.omni_reference_task_type" type="string">
+  **仅 Seedance 2.5**：全模态参考任务的子类型引导，可选 `auto`（默认，按素材+提示词自动判定）、`reference`（参考生视频，`ratio`/`duration` 无特殊限制）、`edit`（视频编辑，要求 `content` 含 `reference_video`（或裸 `video_url`）、`ratio=adaptive`、`duration=-1`）、`extend`（视频延长，要求 `content` 含 `reference_video`（或裸 `video_url`）、`ratio=adaptive`）。显式指定可在提交时前置校验参数，减少任务创建后的异步报错（`InvalidParameter.TaskTypeConstraint`）。
 </ParamField>
 
 <ParamField body="metadata.content" type="object[]">
