@@ -42,11 +42,12 @@
 | | `kimi-k2.6` | 6.5 / 27 / 1.1 |
 | | `kimi-k2.7-code` | 6.5 / 27 / 1.3 |
 | | `kimi-k3` | 20 / 100 / 2 |
-| `LLM - GLM` | `glm-5.1`、`glm-5.2` | 8 / 28 / 2 |
+| `LLM - GLM` | `glm-5.1`、`glm-5.2`、`glm-5.3` | 8 / 28 / 2 |
 | `LLM - DeepSeek` | `deepseek-v4-pro` | 12 / 24 / 1 |
 
 - 国内公式：`ModelRatio = 挂牌输入 ÷ 2`；`CompletionRatio = 输出÷输入`；`CacheRatio = 缓存÷输入`。
-- thinking 默认由各渠道 `param_override` 注入（未传才补）：Kimi/GLM 默认开思考；`kimi-k2.7-code`/`kimi-k3` 强制开；DeepSeek 默认 `enable_thinking=false`。
+- thinking 默认由各渠道 `param_override` 注入（未传才补）：Kimi/GLM 默认开思考；`kimi-k2.7-code`/`kimi-k3` 强制开；DeepSeek 默认 `enable_thinking=false`；`glm-5.3` 上游强制开思考（`thinking` 仅接受 `enabled`，`reasoning_effort` 三档 low/high/max，默认 max）。
+- `glm-5.3` 已实测：`thinking`/`reasoning_effort` 透传生效（low/high 可压 reasoning_tokens）；但上游对非法值（thinking disabled、effort 非法枚举）不返回 400，而是 **504 超时**（中转站行为，2026-08-26 实测）。
 - `glm-5.1` 上游映射 `xopglm51`（用户侧仍用 `glm-5.1`）。
 - **已废弃**：`General - LLM`（勿再写进文档或新建令牌）。
 - 用户文档禁止出现：渠道 ID、上游 host/key、ModelRatio 数值。

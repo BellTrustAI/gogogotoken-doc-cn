@@ -11,7 +11,7 @@ api: "POST https://gogogotoken.com/v1/chat/completions"
 | 令牌分组 | 支持模型 |
 | --- | --- |
 | `LLM - Kimi` | `kimi-k2.5`、`kimi-k2.6`、`kimi-k2.7-code`、`kimi-k3` |
-| `LLM - GLM` | `glm-5.1`、`glm-5.2` |
+| `LLM - GLM` | `glm-5.1`、`glm-5.2`、`glm-5.3` |
 | `LLM - DeepSeek` | `deepseek-v4-pro` |
 
 <Note>
@@ -80,6 +80,7 @@ curl -X POST https://gogogotoken.com/v1/chat/completions \
 | --- | ---: | ---: | ---: |
 | `glm-5.1` | ¥8.00 | ¥28.00 | ¥2.00 |
 | `glm-5.2` | ¥8.00 | ¥28.00 | ¥2.00 |
+| `glm-5.3` | ¥8.00 | ¥28.00 | ¥2.00 |
 
 ### LLM - DeepSeek
 
@@ -96,6 +97,7 @@ curl -X POST https://gogogotoken.com/v1/chat/completions \
 | `kimi-k2.5`、`kimi-k2.6` | 开思考 | 关：`"thinking": { "type": "disabled" }` |
 | `kimi-k2.7-code`、`kimi-k3` | **强制开思考**，不可关 | 建议 `max_completion_tokens` ≥ 4096，避免思考占满额度导致正文截断 |
 | `glm-5.1`、`glm-5.2` | 开思考 | 关：`"thinking": { "type": "disabled" }`；`glm-5.2` 关思考时请同时带 `"reasoning_effort": "none"` |
+| `glm-5.3` | **强制开思考**，不可关 | 不支持 `"thinking": { "type": "disabled" }`（上游拒绝，表现为 **504 超时**）；思考强度 `"reasoning_effort": "low" / "high" / "max"`，默认 `max` |
 | `deepseek-v4-pro` | **关思考** | 开：`"enable_thinking": true`，并建议加大 `max_completion_tokens` |
 
 ### 关思考示例（GLM-5.2）
@@ -109,6 +111,32 @@ curl -X POST https://gogogotoken.com/v1/chat/completions \
     "max_completion_tokens": 256,
     "thinking": { "type": "disabled" },
     "reasoning_effort": "none",
+    "messages": [
+      { "role": "user", "content": "用一句话介绍你自己" }
+    ]
+  }'
+```
+
+### GLM-5.3 调用要点
+
+- 1M 上下文，最大输出 128K tokens；始终启用思考，强度三档 `low` / `high` / `max`。
+- 不传思考参数时按上游默认：`thinking.type=enabled`、`reasoning_effort=max`。`max` 档思考 token 占比高，输出计费相应增加；传 `"reasoning_effort": "low"` 可减少思考 token。
+- `thinking` 与 `reasoning_effort` 为智谱厂商参数，平台原样透传。
+- 从 `glm-5.2` 迁移：若原请求带 `"thinking": { "type": "disabled" }`，需改为 `enabled` 或删除该字段，否则请求会被上游拒绝。
+
+<Warning>
+  `glm-5.3` 中 `"thinking": { "type": "disabled" }`、或 `reasoning_effort` 取 `low` / `high` / `max` 之外的值时，上游不返回参数错误，请求表现为 **504 Gateway Timeout**。
+</Warning>
+
+```bash
+curl -X POST https://gogogotoken.com/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "glm-5.3",
+    "max_completion_tokens": 4096,
+    "thinking": { "type": "enabled" },
+    "reasoning_effort": "low",
     "messages": [
       { "role": "user", "content": "用一句话介绍你自己" }
     ]
@@ -166,7 +194,7 @@ curl -X POST https://gogogotoken.com/v1/chat/completions \
 </ParamField>
 
 <ParamField body="reasoning_effort" type="string">
-  与 GLM 关思考配合使用；`glm-5.2` 关闭思考时请设为 `none`。
+  GLM 思考强度。`glm-5.3` 支持 `low` / `high` / `max`（默认 `max`）；`glm-5.2` 关闭思考时请设为 `none`。
 </ParamField>
 
 ## 相关页面
