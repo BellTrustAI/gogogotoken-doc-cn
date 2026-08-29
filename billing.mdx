@@ -159,6 +159,33 @@ Kimi / 智谱 GLM / DeepSeek 通过 `POST /v1/chat/completions` 调用，按输�
   不同套餐、分组或活动价格可能影响最终扣费。建议以控制台定价与请求日志作为结算依据。
 </Info>
 
+## 任务级结算快照 {#task-billing}
+
+视频任务查询接口（`GET /v1/video/generations/{task_id}`）在 `data.billing` 返回本任务的结算快照，可用于逐任务对账：
+
+| 字段 | 说明 |
+| --- | --- |
+| `status` | `pending`（未终态）/ `settled`（已结算）/ `refunded`（失败已全额退还预扣） |
+| `quota` | 最终实际扣费的内部额度（整数，差额结算后的准确值） |
+| `amount` | 最终金额（站点展示币种，十进制字符串；500000 quota = 1 单位） |
+| `billable_tokens` | 实际计费用 token 数（上游 `usage` 原样值） |
+| `model_ratio` / `group_ratio` | 提交时锁定的模型倍率 / 分组倍率快照 |
+| `variant_ratio` | 规格档位倍率（按上游实际出片分辨率 × 是否含视频输入） |
+| `promo_ratio` / `promo_at` | 命中的限时促销倍率与促销窗口锚点 |
+| `input_mode` | `no_video` / `with_video`（计费档判定：是否含视频文件输入） |
+| `list_price_per_m_tokens` | 刊例单价（展示币种 / 百万 token，未含分组与促销） |
+| `effective_price_per_m_tokens` | 有效单价（由最终金额折算） |
+| `settled_at` | 结算时间（unix 秒） |
+
+复算口径：
+
+```text
+quota  = billable_tokens × model_ratio × variant_ratio × promo_ratio × group_ratio
+amount = quota / 500000
+```
+
+价格参数全部取自任务提交时写入的快照，后续改价或活动下线不影响历史任务的口径。上游任务 ID（`data.upstream_task_id`）与上游完整任务响应（`data.data`）一并透出，可用于与官方控制台核对。字段完整示例见 [任务查询](/video-tasks)。
+
 ## 查看用量
 
 - 控制台日志：每次请求的扣费详情

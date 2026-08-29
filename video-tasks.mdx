@@ -46,14 +46,43 @@ curl "https://gogogotoken.com/v1/video/generations?request_id=YOUR_X_ONEAPI_REQU
     "status": "SUCCESS",
     "progress": "100%",
     "result_url": "https://assets.example.com/generated-video.mp4",
+    "upstream_task_id": "cgt-20260827173939-xxxxx",
+    "billing": {
+      "status": "settled",
+      "currency": "USD",
+      "quota": 220273,
+      "amount": "0.440546",
+      "billable_tokens": 108900,
+      "model_ratio": 11.5,
+      "group_ratio": 0.78,
+      "variant_ratio": 0.6086956521739131,
+      "promo_ratio": 0.4,
+      "promo_at": 1787823579,
+      "input_mode": "with_video",
+      "generate_audio": true,
+      "list_price_per_m_tokens": "23",
+      "effective_price_per_m_tokens": "4.367983",
+      "settled_at": 1787823681
+    },
     "data": {
+      "id": "cgt-20260827173939-xxxxx",
+      "model": "doubao-seedance-2-0-mini-260615",
       "status": "succeeded",
+      "seed": 58950,
+      "resolution": "480p",
+      "ratio": "16:9",
+      "duration": 4,
+      "framespersecond": 24,
+      "generate_audio": true,
+      "service_tier": "default",
+      "created_at": 1787823581,
+      "updated_at": 1787823666,
       "content": {
         "video_url": "https://assets.example.com/generated-video.mp4"
       },
       "usage": {
-        "completion_tokens": 108900,
-        "total_tokens": 108900
+        "completion_tokens": 100858,
+        "total_tokens": 100858
       }
     }
   }
@@ -124,9 +153,25 @@ GET /v1/video/generations?request_id=<X-Oneapi-Request-Id>
   生成成功后的视频 URL（平台提取自上游响应）。
 </ResponseField>
 
+<ResponseField name="data.upstream_task_id" type="string">
+  上游火山方舟原始任务 ID（`cgt-...`），可用于官方控制台核对。早期创建的任务无此字段时缺省。
+</ResponseField>
+
+<ResponseField name="data.billing" type="object">
+  本任务结算快照：结算状态（`pending` / `settled` / `refunded`）、最终扣费额度 `quota` 与金额 `amount`、计费 token 数 `billable_tokens`，以及提交时锁定的价格参数（`model_ratio` / `group_ratio` / `variant_ratio` / `promo_ratio` / `input_mode` 等）。金额与单价为十进制字符串；复算口径见 [计费说明](/billing#task-billing)。
+</ResponseField>
+
+<ResponseField name="data.data" type="object">
+  上游任务查询的完整原始响应：实际模型版本 `model`、实际生成规格（`resolution` / `ratio` / `duration` / `framespersecond` / `seed` / `generate_audio` / `service_tier`）、完整 `usage` 等。请求 `duration=-1`（智能时长）时，此处的 `duration` 为官方最终选择的实际输出时长。
+</ResponseField>
+
 <ResponseField name="data.data.usage.completion_tokens" type="integer">
   Token 计费模型（`doubao-seedance-2-0` / `-fast`）的上游真实输出 token，用于差额结算。
 </ResponseField>
+
+<Note>
+  `data.data` 的完整度依赖后台轮询刷新：提交后立刻查询时 `data` 内仅有上游任务 ID，进入终态（`SUCCESS` / `FAILURE`）前请等待一轮刷新（约 15 秒）。
+</Note>
 
 ## 轮询建议
 
