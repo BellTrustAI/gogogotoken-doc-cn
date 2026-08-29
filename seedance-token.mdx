@@ -109,10 +109,11 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
     "upstream_task_id": "cgt-20260827173939-xxxxx",
     "billing": {
       "status": "settled",
-      "currency": "USD",
+      "currency": "CNY",
       "quota": 220273,
       "amount": "0.440546",
       "billable_tokens": 108900,
+      "billing_token_field": "total_tokens",
       "model_ratio": 11.5,
       "group_ratio": 0.78,
       "promo_ratio": 0.4,
@@ -143,7 +144,7 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
 ```
 
 <Note>
-  当 `data.status` 为 `SUCCESS` 时，读取 `data.data.usage.completion_tokens` 作为结算依据。`data.data` 是上游任务查询的完整原始响应（实际模型版本、实际分辨率 / 时长 / 帧率、`seed`、`generate_audio` 等）；`data.billing` 为本任务的结算快照（最终金额与锁定的价格参数），可用于逐任务对账。`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 不支持 `1080p` / `4k`；`doubao-seedance-2-5` 支持到 `1080p`、不支持 `4k`。传不支持档位会被服务端拒绝。
+  当 `data.status` 为 `SUCCESS` 时，结算依据见 `data.billing.billable_tokens`（取自上游 `usage.total_tokens`，Seedance 任务中与 `completion_tokens` 恒等，来源字段见 `billing.billing_token_field`）。`data.data` 是上游任务查询的完整原始响应（实际模型版本、实际分辨率 / 时长 / 帧率、`seed`、`generate_audio` 等）；`data.billing` 为本任务的结算快照（最终金额与锁定的价格参数），可用于逐任务对账。`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 不支持 `1080p` / `4k`；`doubao-seedance-2-5` 支持到 `1080p`、不支持 `4k`。传不支持档位会被服务端拒绝。
 </Note>
 
 ## 参数说明

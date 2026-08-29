@@ -49,10 +49,11 @@ curl "https://gogogotoken.com/v1/video/generations?request_id=YOUR_X_ONEAPI_REQU
     "upstream_task_id": "cgt-20260827173939-xxxxx",
     "billing": {
       "status": "settled",
-      "currency": "USD",
+      "currency": "CNY",
       "quota": 220273,
       "amount": "0.440546",
       "billable_tokens": 108900,
+      "billing_token_field": "total_tokens",
       "model_ratio": 11.5,
       "group_ratio": 0.78,
       "variant_ratio": 0.6086956521739131,
@@ -166,7 +167,7 @@ GET /v1/video/generations?request_id=<X-Oneapi-Request-Id>
 </ResponseField>
 
 <ResponseField name="data.data.usage.completion_tokens" type="integer">
-  Token 计费模型（`doubao-seedance-2-0` / `-fast`）的上游真实输出 token，用于差额结算。
+  Token 计费模型（`doubao-seedance-2-0` / `-fast`）的上游真实输出 token。结算口径以 `data.billing.billable_tokens` 为准（取自 `usage.total_tokens`，两者在 Seedance 任务中恒等）。
 </ResponseField>
 
 <Note>

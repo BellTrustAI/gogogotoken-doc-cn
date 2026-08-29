@@ -169,6 +169,7 @@ Kimi / 智谱 GLM / DeepSeek 通过 `POST /v1/chat/completions` 调用，按输�
 | `quota` | 最终实际扣费的内部额度（整数，差额结算后的准确值） |
 | `amount` | 最终金额（站点展示币种，十进制字符串；500000 quota = 1 单位） |
 | `billable_tokens` | 实际计费用 token 数（上游 `usage` 原样值） |
+| `billing_token_field` | `billable_tokens` 取自的上游字段（`total_tokens`；Seedance 任务中与 `completion_tokens` 恒等） |
 | `model_ratio` / `group_ratio` | 提交时锁定的模型倍率 / 分组倍率快照 |
 | `variant_ratio` | 规格档位倍率（按上游实际出片分辨率 × 是否含视频输入） |
 | `promo_ratio` / `promo_at` | 命中的限时促销倍率与促销窗口锚点 |
