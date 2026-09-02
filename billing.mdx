@@ -193,6 +193,64 @@ amount = quota / 500000
 - 控制台定价：各模型倍率与参考单价
 - 控制台钱包：余额与充值
 
+### API 查询账户余额与用量
+
+任意有效令牌（`sk-...`）均可查询**所属账户**的余额与累计用量，无需登录控制台；同一账户下所有令牌查到的数字一致（账户级口径，与单个令牌的限额无关）。
+
+```bash
+# 查询账户余额
+curl https://gogogotoken.com/v1/dashboard/billing/subscription \
+  -H "Authorization: Bearer sk-..."
+
+# 查询账户累计用量
+curl https://gogogotoken.com/v1/dashboard/billing/usage \
+  -H "Authorization: Bearer sk-..."
+```
+
+余额响应示例：
+
+```json
+{
+  "object": "billing_subscription",
+  "has_payment_method": true,
+  "soft_limit_usd": 205.5,
+  "hard_limit_usd": 205.5,
+  "system_hard_limit_usd": 205.5,
+  "access_until": 0,
+  "balance": 54.995054,
+  "total_granted": 205.5,
+  "currency": "CNY"
+}
+```
+
+| 字段 | 含义 |
+| --- | --- |
+| `balance` | **剩余额度（余额）**，展示币种 |
+| `total_granted` | 总额度 = 剩余 + 已用 |
+| `currency` | 币种代码（本站为 `CNY`） |
+| `soft_limit_usd` 等 `*_usd` 字段 | OpenAI 兼容的历史字段，值等于 `total_granted`；字段名带 `usd` 但**数值按站点币种**（本站为人民币元） |
+| `access_until` | 令牌有效期截止时间戳；`0` 表示不过期 |
+
+用量响应示例：
+
+```json
+{
+  "object": "list",
+  "total_usage": 15050.49,
+  "total_used": 150.504946,
+  "currency": "CNY"
+}
+```
+
+| 字段 | 含义 |
+| --- | --- |
+| `total_used` | **累计消耗**，展示币种（元） |
+| `total_usage` | OpenAI 兼容的历史字段，等于 `total_used × 100`（分口径） |
+
+<Note>
+  响应只含纯数字，币种以 `currency` 字段为准。接口只返回令牌所属账户自己的数据；令牌被禁用或过期时无法查询。
+</Note>
+
 ## 预扣与结算
 
 - **Seedance 视频**：提交时按请求分辨率预扣；完成后按 `completion_tokens` 与实际生成分辨率档差额结算；失败退还预扣；余额不足时返回 HTTP 402。详见 [Token 计费](/seedance-token)。
