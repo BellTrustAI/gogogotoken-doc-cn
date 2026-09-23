@@ -224,10 +224,23 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
       }'
     ```
 
-    <Note>480p 样片的 token 用量与单价，与普通 480p 生成完全一致。</Note>
+    提交响应中的 `task_id` 就是样片任务 ID，记下它：
+
+    ```json
+    {
+      "id": "task_9f8e7d6c5b4a3210fedcba9876543210",
+      "task_id": "task_9f8e7d6c5b4a3210fedcba9876543210",
+      "object": "video",
+      "model": "doubao-seedance-2-5",
+      "status": "queued",
+      "progress": 0
+    }
+    ```
+
+    <Note>480p 样片的 token 用量与单价，与普通 480p 生成完全一致。先按 [任务查询](/video-tasks) 轮询这个 `task_id`，等状态变 `succeeded`、预览样片满意后再进行第二步。</Note>
   </Step>
   <Step title="基于样片出 1080p 成片">
-    用上一步返回的样片任务 ID，`metadata.content` 只放一个 `draft_task` 引用；分辨率**仅支持 1080p**（不传默认 1080p）。`draft_task.id` 填提交响应里的 `task_id`。
+    把上一步的 `task_id` 原样填进 `draft_task.id`；`metadata.content` 只放这一个 `draft_task` 引用，分辨率**仅支持 1080p**（不传默认 1080p）。
 
     ```bash
     curl -X POST https://gogogotoken.com/v1/video/generations \
@@ -239,7 +252,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
         "metadata": {
           "output_format": "mov",
           "content": [
-            { "type": "draft_task", "draft_task": { "id": "task_1234567890" } }
+            { "type": "draft_task", "draft_task": { "id": "task_9f8e7d6c5b4a3210fedcba9876543210" } }
           ]
         }
       }'
