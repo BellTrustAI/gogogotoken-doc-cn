@@ -197,9 +197,80 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
 | `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
 | `metadata.omni_reference_task_type` | `omni_reference_task_type` | **2.5**：`auto` / `reference` / `edit` / `extend`，原样透传 |
+| `metadata.draft` | `draft` | **仅 2.5**：`true` 开启[样片模式](#draft-mode) Step1（仅 480p） |
+| `metadata.content[].draft_task` | `content[].draft_task` | **仅 2.5**：样片模式 Step2 引用样片任务 ID（仅 1080p）；平台自动换算为上游任务号 |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
 | `callback_url` | `callback_url` | 回调通知地址，原样透传 |
+
+## 样片模式（Draft，仅 Seedance 2.5） {#draft-mode}
+
+样片模式是「先出低分辨率样片验证效果，再生成高质量成片」的两步式生视频。先生成一段 480p 样片确认场景、镜头、动作、提示词意图，满意后基于样片任务 ID 出 1080p 成片。**仅 `doubao-seedance-2-5` 支持。**
+
+<Steps>
+  <Step title="生成 480p 样片">
+    在 `metadata` 中加 `draft: true`，分辨率**仅支持 480p**（不传默认 480p，传其他分辨率返回 400）。其余参数（提示词、参考素材、时长、宽高比、`seed`、音频等）与普通生成一致。提交响应里的 `task_id` 即**样片任务 ID**，下一步要用它。
+
+    ```bash
+    curl -X POST https://gogogotoken.com/v1/video/generations \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "doubao-seedance-2-5",
+        "prompt": "女孩抱着狐狸，女孩睁开眼，温柔地看向镜头，镜头缓缓拉远",
+        "images": ["https://assets.example.com/girl-fox.jpg"],
+        "size": "480p",
+        "metadata": { "draft": true }
+      }'
+    ```
+
+    提交响应中的 `task_id` 就是样片任务 ID，记下它：
+
+    ```json
+    {
+      "id": "task_9f8e7d6c5b4a3210fedcba9876543210",
+      "task_id": "task_9f8e7d6c5b4a3210fedcba9876543210",
+      "object": "video",
+      "model": "doubao-seedance-2-5",
+      "status": "queued",
+      "progress": 0
+    }
+    ```
+
+    <Note>480p 样片的 token 用量与单价，与普通 480p 生成完全一致。先按 [任务查询](/video-tasks) 轮询这个 `task_id`，等状态变 `succeeded`、预览样片满意后再进行第二步。</Note>
+  </Step>
+  <Step title="基于样片出 1080p 成片">
+    把上一步的 `task_id` 原样填进 `draft_task.id`；`metadata.content` 只放这一个 `draft_task` 引用，分辨率**仅支持 1080p**（不传默认 1080p）。
+
+    ```bash
+    curl -X POST https://gogogotoken.com/v1/video/generations \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "doubao-seedance-2-5",
+        "size": "1080p",
+        "metadata": {
+          "output_format": "mov",
+          "content": [
+            { "type": "draft_task", "draft_task": { "id": "task_9f8e7d6c5b4a3210fedcba9876543210" } }
+          ]
+        }
+      }'
+    ```
+
+    成片按 1080p 正常视频计费；轮询与下载与普通任务一致，见 [任务查询](/video-tasks)。
+  </Step>
+</Steps>
+
+<Warning>
+  基于样片出成片时，**禁止再传** `prompt`、参考图/视频/音频、`duration`、`ratio`（`metadata.ratio`）、`seed`、`generate_audio`、`omni_reference_task_type` —— 这些会自动复用样片阶段的取值，传了会在提交时返回 400。只有 `output_format`、`watermark` 等可重新指定。
+</Warning>
+
+<Note>
+  - 样片任务 ID 有效期 **7 天**（自创建起算），过期无法出片。
+  - 必须用同一个 API Key：只能引用本 Key 自己创建的样片任务。
+  - `draft: true` 与 `draft_task` 不能在同一请求中同时出现。
+</Note>
 
 ## 回调通知（callback_url，免轮询）
 
