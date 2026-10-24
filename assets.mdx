@@ -43,11 +43,11 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetUrl \
 | 请求格式 | `multipart/form-data`，文件字段名 `file` |
 | 支持类型 | 图片 jpg / png / webp / gif；视频 mp4 / mov；音频 mp3 / wav（按文件真实内容识别，改名无效） |
 | 大小上限 | 图片 20MB / 视频 200MB / 音频 50MB |
-| 频率限制 | 每个 API Key 20 次 / 天 |
+| 频率限制 | 每个账号 20 次 / 天（同一账号下多把 API Key 共用此额度） |
 | 有效期 | URL **7 天**后自动失效，请及时用于生成任务 |
-| 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费） |
+| 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费）。去重按账号隔离：别人传过同一文件不影响你的 URL 和有效期 |
 
-也可在控制台 **素材管理** 中查看素材组、复制 `asset://` 链接、解绑组。
+控制台 **素材管理** 中的素材组、`asset://` 链接属于素材库体系（当前升级期间不可用），CreateAssetUrl 上传的素材**不会**进入素材库，也不生成 `asset://`——返回的公网 URL 直接使用即可。
 
 <RequestExample>
 
@@ -159,19 +159,19 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 
 ## 在图生视频中引用
 
-<Warning>
-  **暂不支持**：`asset://` 引用当前不可用（渠道升级期间），提交会返回 400。请使用 [CreateAssetUrl](#create-asset-url) 上传素材后直接填返回的公网 URL。
-</Warning>
-
-登记成功后，在 [视频生成](/video-generations) 的 `metadata.content` 中使用：
+用 CreateAssetUrl 返回的公网 URL 直接填进 [视频生成](/video-generations) 的 `images[]` 或 `metadata.content`：
 
 ```json
 {
   "type": "image_url",
-  "image_url": { "url": "asset://asset-20260627000800-l6jq6" },
+  "image_url": { "url": "https://gotoken-oss-com.oss-cn-shanghai.aliyuncs.com/uploads/1/ddbd....jpg" },
   "role": "first_frame"
 }
 ```
+
+<Warning>
+  **暂不支持**：`asset://` 引用当前不可用（渠道升级期间），提交会返回 400。请一律使用公网 URL。
+</Warning>
 
 ## 常见问题
 
