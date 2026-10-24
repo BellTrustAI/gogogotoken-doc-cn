@@ -43,7 +43,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetUrl \
 | 请求格式 | `multipart/form-data`，文件字段名 `file` |
 | 支持类型 | 图片 jpg / png / webp / gif；视频 mp4 / mov；音频 mp3 / wav（按文件真实内容识别，改名无效） |
 | 大小上限 | 图片 20MB / 视频 200MB / 音频 50MB |
-| 频率限制 | 每个账号 20 次 / 天（同一账号下多把 API Key 共用此额度） |
+| 频率限制 | 每个账号 1000 次 / 天（同一账号下多把 API Key 共用此额度） |
 | 有效期 | URL **7 天**后自动失效，请及时用于生成任务 |
 | 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费）。去重按账号隔离：别人传过同一文件不影响你的 URL 和有效期 |
 
