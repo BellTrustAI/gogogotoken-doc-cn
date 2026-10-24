@@ -12,6 +12,41 @@ Seedance 素材管理共 **8 个端点**，均为 **POST** 请求。不同 API K
   Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
 </Note>
 
+<Warning>
+  **渠道升级期间**：素材库体系（CreateAsset 登记、`asset://` 引用）暂不可用，调用会返回 400。需要公网素材 URL 请直接用下方 [素材上传 CreateAssetUrl](#create-asset-url)——上传即得公网 URL，可直接填进视频生成的 `images[]` / `metadata.content[]`。恢复时间以实际调用结果为准。
+</Warning>
+
+## 素材上传（CreateAssetUrl） {#create-asset-url}
+
+上传本地素材文件，平台转存后返回**公网可直接访问的 URL**，用于视频生成的 `images[]` / `metadata.content[]` 等字段。成功一次扣费 **¥0.10**。
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetUrl \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@/path/to/photo.jpg"
+```
+
+成功响应：
+
+```json
+{
+  "id": "upl_ddbdb9cdb5f109c5",
+  "url": "https://gotoken-oss-com.oss-cn-shanghai.aliyuncs.com/uploads/1/ddbd....jpg",
+  "size": 44891,
+  "content_type": "image/jpeg",
+  "expires_in_days": 7
+}
+```
+
+| 项 | 说明 |
+| --- | --- |
+| 请求格式 | `multipart/form-data`，文件字段名 `file` |
+| 支持类型 | 图片 jpg / png / webp / gif；视频 mp4 / mov；音频 mp3 / wav（按文件真实内容识别，改名无效） |
+| 大小上限 | 图片 20MB / 视频 200MB / 音频 50MB |
+| 频率限制 | 每个 API Key 20 次 / 天 |
+| 有效期 | URL **7 天**后自动失效，请及时用于生成任务 |
+| 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费） |
+
 也可在控制台 **素材管理** 中查看素材组、复制 `asset://` 链接、解绑组。
 
 <RequestExample>
@@ -66,7 +101,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
 | 接口 | 端点 | 说明 |
 | --- | --- | --- |
 | CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
-| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次）。**暂不支持**，请改用 [CreateAssetUrl](#create-asset-url) |
 | GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
 | GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
 | ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
@@ -123,6 +158,10 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 | `PageSize` | number | 否 | 每页数量，默认 20 |
 
 ## 在图生视频中引用
+
+<Warning>
+  **暂不支持**：`asset://` 引用当前不可用（渠道升级期间），提交会返回 400。请使用 [CreateAssetUrl](#create-asset-url) 上传素材后直接填返回的公网 URL。
+</Warning>
 
 登记成功后，在 [视频生成](/video-generations) 的 `metadata.content` 中使用：
 

@@ -36,7 +36,7 @@ Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实�
 | 1080p | ¥77 | ¥46 |
 
 <Note>
-  2.5 额外能力：单次素材上限约 **图片 ≤30 / 视频 ≤10 / 音频 ≤10（合计 ≤50）**；`metadata.output_format` 可选 `mp4`（默认）或 `mov`。首尾帧 / 编辑 / 延长类任务请使用 `ratio=adaptive`；编辑类常需 `duration=-1`。传 `4k` 或时长超出范围会被网关 `400` 拒绝。支持[样片模式（Draft）](/video-generations#draft-mode)：先出 480p 样片验证效果、再基于样片出 1080p 成片。
+  2.5 额外能力：单次素材上限约 **图片 ≤30 / 视频 ≤10 / 音频 ≤10（合计 ≤50）**；`metadata.output_format` 可选 `mp4`（默认）或 `mov`。首尾帧 / 编辑 / 延长类任务请使用 `ratio=adaptive`；编辑类常需 `duration=-1`。传 `4k` 或时长超出范围会被网关 `400` 拒绝。支持[样片模式（Draft）](/video-generations#draft-mode)（**暂不支持**，渠道升级期间提交返回 400）：先出 480p 样片验证效果、再基于样片出 1080p 成片。
 </Note>
 
 <Note>

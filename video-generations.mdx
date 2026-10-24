@@ -159,6 +159,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   }'
 ```
 
+<Note>
+  **暂不支持**：`asset://` 素材库引用当前不可用（渠道升级期间），提交会返回 400。请改用公网 URL——本地素材可通过 [素材上传（CreateAssetUrl）](/assets#create-asset-url) 获取公网 URL。
+</Note>
+
 使用 [素材管理](/assets) 登记的图片时，将 URL 换为 `asset://asset-xxx`（ID 格式以实际返回为准）：
 
 ```json
@@ -197,13 +201,17 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
 | `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
 | `metadata.omni_reference_task_type` | `omni_reference_task_type` | **2.5**：`auto` / `reference` / `edit` / `extend`，原样透传 |
-| `metadata.draft` | `draft` | **仅 2.5**：`true` 开启[样片模式](#draft-mode) Step1（仅 480p） |
-| `metadata.content[].draft_task` | `content[].draft_task` | **仅 2.5**：样片模式 Step2 引用样片任务 ID（仅 1080p）；平台自动换算为上游任务号 |
+| `metadata.draft` | `draft` | **仅 2.5**：`true` 开启[样片模式](#draft-mode) Step1（仅 480p）。**暂不支持**，提交返回 400 |
+| `metadata.content[].draft_task` | `content[].draft_task` | **仅 2.5**：样片模式 Step2 引用样片任务 ID（仅 1080p）；平台自动换算为上游任务号。**暂不支持**，提交返回 400 |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
-| `callback_url` | `callback_url` | 回调通知地址，原样透传 |
+| `callback_url` | `callback_url` | 回调通知地址，原样透传。**暂不支持**，提交返回 400，请使用轮询 |
 
 ## 样片模式（Draft，仅 Seedance 2.5） {#draft-mode}
+
+<Warning>
+  **暂不支持**：渠道升级期间样片模式暂不可用，提交 `draft` / `draft_task` 会返回 400。渠道升级完成后恢复，恢复时不再另行通知，请以实际调用结果为准。
+</Warning>
 
 样片模式是「先出低分辨率样片验证效果，再生成高质量成片」的两步式生视频。先生成一段 480p 样片确认场景、镜头、动作、提示词意图，满意后基于样片任务 ID 出 1080p 成片。**仅 `doubao-seedance-2-5` 支持。**
 
@@ -273,6 +281,10 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 </Note>
 
 ## 回调通知（callback_url，免轮询）
+
+<Warning>
+  **暂不支持**：渠道升级期间回调通知暂不可用，传 `callback_url` 会返回 400。请使用 [任务查询](/video-tasks) 轮询获取结果。
+</Warning>
 
 提交任务时传入 `callback_url`，任务状态变化（排队 → 运行 → 成功/失败）时上游会主动向该地址 POST 推送任务结果，无需轮询。回调请求体的结构与 [任务查询](/video-tasks) 接口的返回一致（含 `id`、`status`、`content.video_url`、`usage` 等字段），与豆包官方行为对齐。
 
