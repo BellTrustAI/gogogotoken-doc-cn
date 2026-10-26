@@ -6,14 +6,14 @@ icon: "folder-kanban"
 api: "POST /v1/seedance/asset/CreateAssetGroup"
 ---
 
-Seedance 素材管理共 **8 个端点**，均为 **POST** 请求。不同 API Key 之间的素材数据完全隔离。
+素材管理共 **10 个端点**，均为 **POST** 请求。不同 API Key 之间的素材数据完全隔离。
 
 <Note>
   Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
 </Note>
 
 <Warning>
-  **渠道升级期间**：素材库体系（CreateAsset 登记、`asset://` 引用）暂不可用，调用会返回 400。需要公网素材 URL 请直接用下方 [素材上传 CreateAssetUrl](#create-asset-url)——上传即得公网 URL，可直接填进视频生成的 `images[]` / `metadata.content[]`。恢复时间以实际调用结果为准。
+  **渠道升级期间**：素材库体系 8 个端点（CreateAssetGroup / CreateAsset / GetAsset / GetAssetGroup / ListAssets / ListAssetGroups / UpdateAsset / UpdateAssetGroup）**全部暂不可用**，调用会返回错误。可用的是平台自带的两个素材上传接口：[素材上传 CreateAssetUrl](#create-asset-url) 与 [我的上传列表 ListMyUploads](#list-my-uploads)——上传即得公网 URL，可直接填进视频生成的 `images[]` / `metadata.content[]`。素材库恢复时间以实际调用结果为准。
 </Warning>
 
 ## 素材上传（CreateAssetUrl） {#create-asset-url}
@@ -48,6 +48,44 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetUrl \
 | 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费）。去重按账号隔离：别人传过同一文件不影响你的 URL 和有效期。重复上传时若剩余有效期不足 1 天，会自动刷新回完整 30 天 |
 
 控制台 **素材管理** 中的素材组、`asset://` 链接属于素材库体系（当前升级期间不可用），CreateAssetUrl 上传的素材**不会**进入素材库，也不生成 `asset://`——返回的公网 URL 直接使用即可。
+
+## 我的上传列表（ListMyUploads） {#list-my-uploads}
+
+查询本账号通过 CreateAssetUrl 上传过的素材列表，按最近上传时间倒序。**只读、免费**。
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/ListMyUploads \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "PageNumber": 1, "PageSize": 20 }'
+```
+
+成功响应：
+
+```json
+{
+  "total": 2,
+  "page_number": 1,
+  "page_size": 20,
+  "items": [
+    {
+      "id": "upl_ddbdb9cdb5f109c5",
+      "url": "https://gotoken-oss-com.oss-cn-shanghai.aliyuncs.com/uploads/1/ddbd....jpg",
+      "size": 44891,
+      "content_type": "image/jpeg",
+      "uploaded_at": 1792947042,
+      "expires_in_days": 25
+    }
+  ]
+}
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `PageNumber` | number | 否 | 页码，从 1 开始 |
+| `PageSize` | number | 否 | 每页数量，默认 20，最大 100 |
+
+`expires_in_days` 为剩余有效天数（0 表示已过期，重新上传同一文件会自动刷新回 30 天）。
 
 <RequestExample>
 
@@ -100,14 +138,18 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
 
 | 接口 | 端点 | 说明 |
 | --- | --- | --- |
-| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
+| CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次），**可用** |
+| ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费），**可用** |
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费）。**暂不支持**（渠道升级期间） |
 | CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次）。**暂不支持**，请改用 [CreateAssetUrl](#create-asset-url) |
-| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
-| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
-| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
-| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
-| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
-| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
+| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组。**暂不支持**（渠道升级期间） |
+| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材。**暂不支持**（渠道升级期间） |
+| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组。**暂不支持**（渠道升级期间） |
+| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材。**暂不支持**（渠道升级期间） |
+| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组。**暂不支持**（渠道升级期间） |
+| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材。**暂不支持**（渠道升级期间） |
+
+以下素材库体系的端点文档在升级期间保留供参考，恢复前调用会返回错误。
 
 ## CreateAssetGroup
 
