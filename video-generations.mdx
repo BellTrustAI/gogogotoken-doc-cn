@@ -196,7 +196,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `prompt` | `content[]` 中 `type: "text"` | 必填 |
 | `images[]` | `content[]` 中 `type: "image_url"` | 简单图生，不带 `role` |
 | `metadata.content[]` | `content[]` | 多模态；含 `role` 时与官方一致 |
-| `seconds` / `duration` | `duration` | `seconds` 优先；也支持 `-1`（智能时长）。**2.5** 合法范围为 `4–30` 或 `-1` |
+| `seconds` / `duration` | `duration` | `seconds` 优先；也支持 `-1`（智能时长）。两者均可传数字或数字字符串（`4` ≡ `"4"`）；**2.5** 合法范围为 `4–30` 或 `-1` |
 | `size` / `metadata.resolution` | `resolution` | 官方枚举；`metadata.resolution` 优先；不支持像素串。**2.5** 支持 `480p`/`720p`/`1080p`（不含 `4k`） |
 | `metadata.ratio` | `ratio` | 如 `16:9`、`9:16`、`adaptive`（首尾帧/编辑/延长建议 `adaptive`） |
 | `metadata.output_format` | `output_format` | **2.5**：`mp4`（默认）/ `mov` |
@@ -358,12 +358,12 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   视频描述文本。
 </ParamField>
 
-<ParamField body="seconds" type="string" default="5">
-  视频时长（秒），传字符串如 `"5"`。优先于顶层 `duration`。也可传 `"-1"` 智能时长。**2.5** 为 `4–30` 或 `-1`。
+<ParamField body="seconds" type="string | number" default="5">
+  视频时长（秒），传字符串如 `"5"`。**字符串与数字等价**：`"4"` 与 `4` 都会被识别，优先于顶层 `duration`。也可传 `"-1"`／`-1` 智能时长。**2.5** 为 `4–30` 或 `-1`。
 </ParamField>
 
-<ParamField body="duration" type="number">
-  时长整数，兼容 OpenAI Video 客户端。若同时传 `seconds`，以 `seconds` 为准；支持 `-1`。
+<ParamField body="duration" type="number | string">
+  时长（秒），兼容 OpenAI Video 客户端。**数字与数字字符串等价**：`4` 与 `"4"` 都会被识别。若同时传 `seconds`，以 `seconds` 为准；支持 `-1`。
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">

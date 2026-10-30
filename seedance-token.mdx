@@ -157,8 +157,8 @@ curl https://gogogotoken.com/v1/video/generations/task_1234567890 \
   提示词，支持中英文。
 </ParamField>
 
-<ParamField body="seconds" type="string" default="5">
-  视频时长，传字符串如 `"5"` 或 `"-1"`。用于生成请求，**不参与 token 计费乘算**。2.5 合法范围 `4–30` 或 `-1`。
+<ParamField body="seconds" type="string | number" default="5">
+  视频时长，传字符串如 `"5"` 或 `"-1"`；**传数字（`5` / `-1`）同样生效**，也可改用顶层 `duration`（数字或数字字符串均可，`seconds` 优先）。用于生成请求，**不参与 token 计费乘算**。2.5 合法范围 `4–30` 或 `-1`。
 </ParamField>
 
 <ParamField body="size" type="string" default="720p">
