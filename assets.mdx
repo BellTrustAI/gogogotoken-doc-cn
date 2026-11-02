@@ -6,11 +6,131 @@ icon: "folder-kanban"
 api: "POST /v1/seedance/asset/CreateAssetGroup"
 ---
 
-素材管理共 **11 个端点**，均为 **POST** 请求。**不同账号之间的素材数据完全隔离**：同一账号下多把 API Key 共享同一份素材库，跨账号互不可见。
+素材管理共 **11 个端点**，均为 **POST** 请求，**全部可用**（素材库、`asset://` 引用与 `callback_url` 回调均已恢复）。**不同账号之间的素材数据完全隔离**：同一账号下多把 API Key 共享同一份素材库，跨账号互不可见。
 
 <Note>
   Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
 </Note>
+
+## 接口列表
+
+**素材库体系**（素材组 + `asset://` 引用）
+
+典型流程：`CreateAssetGroup` 建组 → `CreateAsset` 登记素材 → `ListAssets` / `GetAsset` 确认 → 生成时用 `asset://<id>` 引用。
+
+| 接口 | 端点 | 说明 |
+| --- | --- | --- |
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
+| RegisterGroup | `POST /v1/seedance/asset/RegisterGroup` | 注册已有的真人素材组（免费） |
+| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
+| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
+| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
+| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
+| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
+| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
+
+**平台上传**（不依赖素材组，返回公网 URL，可直接填进生成请求）
+
+| 接口 | 端点 | 说明 |
+| --- | --- | --- |
+| CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次） |
+| ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费） |
+
+<RequestExample>
+
+```bash 创建素材组
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Name": "我的素材组" }'
+```
+
+```bash 上传素材（公网 URL）
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Name": "参考图1",
+    "AssetType": "Image",
+    "URL": "https://assets.example.com/photo.jpg"
+  }'
+```
+
+```bash 上传素材（本地原图 base64）
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Name": "参考图1",
+    "AssetType": "Image",
+    "Data": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+  }'
+```
+
+```bash 分页列出素材
+curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Filter": {
+      "GroupIds": ["group_xxx"],
+      "GroupType": "AIGC"
+    },
+    "PageNumber": 1,
+    "PageSize": 20
+  }'
+```
+
+</RequestExample>
+
+## CreateAssetGroup
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Name": "我的素材组" }'
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `Name` | string | 否 | 素材组名称；不填由平台自动生成 |
+| `Description` | string | 否 | 描述 |
+
+## CreateAsset
+
+登记公网素材到指定素材组，成功扣费 **¥0.10 / 次**。创建素材组 `CreateAssetGroup` 免费。
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `GroupId` | string | 否 | 所属素材组 ID；不填则由上游放入默认组 |
+| `Name` | string | 否 | 素材名称；不填由平台自动生成 |
+| `AssetType` | string | 是 | `Image` 或 `Video` |
+| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址（**推荐**） |
+| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。原样转发给上游，大文件建议改用 `URL` |
+
+<Note>
+  `URL` 与 `Data` 二选一，**优先用 `URL`**：已有公网直链直接填；只有本地原图时可先用 [CreateAssetUrl](#create-asset-url) 换公网 URL，再走 `URL` 提交，比内联 base64 更稳。
+</Note>
+
+## GetAsset
+
+```bash
+curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "Id": "asset_xxx" }'
+```
+
+## ListAssets
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `Filter.GroupIds` | string[] | 否 | 素材组 ID 列表；不填返回本账号名下全部组，不属于本账号的组会被剔除 |
+| `Filter.GroupType` | string | 是 | 素材组类型，常用 `AIGC` |
+| `PageNumber` | number | 否 | 页码，从 1 开始 |
+| `PageSize` | number | 否 | 每页数量，默认 20 |
 
 ## 素材上传（CreateAssetUrl） {#create-asset-url}
 
@@ -83,120 +203,19 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListMyUploads \
 
 `expires_in_days` 为剩余有效天数（0 表示已过期，重新上传同一文件会自动刷新回 30 天）。
 
-<RequestExample>
-
-```bash 创建素材组
-curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "Name": "我的素材组" }'
-```
-
-```bash 上传素材（公网 URL）
-curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Name": "参考图1",
-    "AssetType": "Image",
-    "URL": "https://assets.example.com/photo.jpg"
-  }'
-```
-
-```bash 上传素材（本地原图 base64）
-curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Name": "参考图1",
-    "AssetType": "Image",
-    "Data": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
-  }'
-```
-
-```bash 分页列出素材
-curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Filter": {
-      "GroupIds": ["group_xxx"],
-      "GroupType": "AIGC"
-    },
-    "PageNumber": 1,
-    "PageSize": 20
-  }'
-```
-
-</RequestExample>
-
-## 接口列表
-
-| 接口 | 端点 | 说明 |
-| --- | --- | --- |
-| CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次），**可用** |
-| ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费），**可用** |
-| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
-| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
-| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
-| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
-| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
-| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
-| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
-| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
-| RegisterGroup | `POST /v1/seedance/asset/RegisterGroup` | 注册已有的真人素材组（免费） |
-
-## CreateAssetGroup
-
-```bash
-curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "Name": "我的素材组" }'
-```
-
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `Name` | string | 否 | 素材组名称；不填由平台自动生成 |
-| `Description` | string | 否 | 描述 |
-
-## CreateAsset
-
-登记公网素材到指定素材组，成功扣费 **¥0.10 / 次**。创建素材组 `CreateAssetGroup` 免费。
-
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `GroupId` | string | 否 | 所属素材组 ID；不填则由上游放入默认组 |
-| `Name` | string | 否 | 素材名称；不填由平台自动生成 |
-| `AssetType` | string | 是 | `Image` 或 `Video` |
-| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址（**推荐**） |
-| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。原样转发给上游，大文件建议改用 `URL` |
-
-<Note>
-  `URL` 与 `Data` 二选一，**优先用 `URL`**：已有公网直链直接填；只有本地原图时可先用 [CreateAssetUrl](#create-asset-url) 换公网 URL，再走 `URL` 提交，比内联 base64 更稳。
-</Note>
-
-## GetAsset
-
-```bash
-curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "Id": "asset_xxx" }'
-```
-
-## ListAssets
-
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `Filter.GroupIds` | string[] | 否 | 素材组 ID 列表；不填返回本账号名下全部组，不属于本账号的组会被剔除 |
-| `Filter.GroupType` | string | 是 | 素材组类型，常用 `AIGC` |
-| `PageNumber` | number | 否 | 页码，从 1 开始 |
-| `PageSize` | number | 否 | 每页数量，默认 20 |
-
 ## 在图生视频中引用
 
-用 CreateAssetUrl 返回的公网 URL 直接填进 [视频生成](/video-generations) 的 `images[]` 或 `metadata.content`：
+素材库里的素材用 `asset://<素材 Id>` 引用：
+
+```json
+{
+  "type": "image_url",
+  "image_url": { "url": "asset://asset-20260627000800-l6jq6" },
+  "role": "first_frame"
+}
+```
+
+平台上传（CreateAssetUrl）得到的公网 URL 直接填：
 
 ```json
 {
@@ -205,6 +224,8 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
   "role": "first_frame"
 }
 ```
+
+两者都放进 [视频生成](/video-generations) 的 `images[]` 或 `metadata.content`。
 
 ## 常见问题
 
