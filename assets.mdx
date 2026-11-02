@@ -6,15 +6,11 @@ icon: "folder-kanban"
 api: "POST /v1/seedance/asset/CreateAssetGroup"
 ---
 
-素材管理共 **10 个端点**，均为 **POST** 请求。不同 API Key 之间的素材数据完全隔离。
+素材管理共 **11 个端点**，均为 **POST** 请求。**不同账号之间的素材数据完全隔离**：同一账号下多把 API Key 共享同一份素材库，跨账号互不可见。
 
 <Note>
   Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
 </Note>
-
-<Warning>
-  **渠道升级期间**：素材库体系 8 个端点（CreateAssetGroup / CreateAsset / GetAsset / GetAssetGroup / ListAssets / ListAssetGroups / UpdateAsset / UpdateAssetGroup）**全部暂不可用**，调用会返回错误。可用的是平台自带的两个素材上传接口：[素材上传 CreateAssetUrl](#create-asset-url) 与 [我的上传列表 ListMyUploads](#list-my-uploads)——上传即得公网 URL，可直接填进视频生成的 `images[]` / `metadata.content[]`。素材库恢复时间以实际调用结果为准。
-</Warning>
 
 ## 素材上传（CreateAssetUrl） {#create-asset-url}
 
@@ -47,7 +43,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetUrl \
 | 有效期 | URL **30 天**后自动失效，请及时用于生成任务 |
 | 重复上传 | 相同内容自动去重，秒回同一 URL（照常计费）。去重按账号隔离：别人传过同一文件不影响你的 URL 和有效期。重复上传时若剩余有效期不足 1 天，会自动刷新回完整 30 天 |
 
-控制台 **素材管理** 中的素材组、`asset://` 链接属于素材库体系（当前升级期间不可用），CreateAssetUrl 上传的素材**不会**进入素材库，也不生成 `asset://`——返回的公网 URL 直接使用即可。
+控制台 **素材管理** 中的素材组、`asset://` 链接属于素材库体系，CreateAssetUrl 上传的素材**不会**进入素材库，也不生成 `asset://`——返回的公网 URL 直接使用即可。
 
 ## 我的上传列表（ListMyUploads） {#list-my-uploads}
 
@@ -140,16 +136,15 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
 | --- | --- | --- |
 | CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次），**可用** |
 | ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费），**可用** |
-| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费）。**暂不支持**（渠道升级期间） |
-| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次）。**暂不支持**，请改用 [CreateAssetUrl](#create-asset-url) |
-| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组。**暂不支持**（渠道升级期间） |
-| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材。**暂不支持**（渠道升级期间） |
-| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组。**暂不支持**（渠道升级期间） |
-| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材。**暂不支持**（渠道升级期间） |
-| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组。**暂不支持**（渠道升级期间） |
-| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材。**暂不支持**（渠道升级期间） |
-
-以下素材库体系的端点文档在升级期间保留供参考，恢复前调用会返回错误。
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
+| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
+| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
+| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
+| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
+| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
+| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
+| RegisterGroup | `POST /v1/seedance/asset/RegisterGroup` | 注册已有的真人素材组（免费） |
 
 ## CreateAssetGroup
 
@@ -162,7 +157,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `Name` | string | 是 | 素材组名称 |
+| `Name` | string | 否 | 素材组名称；不填由平台自动生成 |
 | `Description` | string | 否 | 描述 |
 
 ## CreateAsset
@@ -171,14 +166,14 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `GroupId` | string | 否 | 所属素材组 ID。部分渠道的素材组已由平台固定，可不填；填写后在这类渠道会被忽略。具体请咨询管理员 |
-| `Name` | string | 是 | 素材名称 |
+| `GroupId` | string | 否 | 所属素材组 ID；不填则由上游放入默认组 |
+| `Name` | string | 否 | 素材名称；不填由平台自动生成 |
 | `AssetType` | string | 是 | `Image` 或 `Video` |
-| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址 |
-| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。平台会自动转存后登记，无需自备图床 |
+| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址（**推荐**） |
+| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。原样转发给上游，大文件建议改用 `URL` |
 
 <Note>
-  `URL` 与 `Data` 二选一：已有公网直链用 `URL`；只有本地原图用 `Data` 传 base64，平台自动转存为公网素材，无需你自己搭图床。
+  `URL` 与 `Data` 二选一，**优先用 `URL`**：已有公网直链直接填；只有本地原图时可先用 [CreateAssetUrl](#create-asset-url) 换公网 URL，再走 `URL` 提交，比内联 base64 更稳。
 </Note>
 
 ## GetAsset
@@ -194,7 +189,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `Filter.GroupIds` | string[] | 是 | 素材组 ID 列表 |
+| `Filter.GroupIds` | string[] | 否 | 素材组 ID 列表；不填返回本账号名下全部组，不属于本账号的组会被剔除 |
 | `Filter.GroupType` | string | 是 | 素材组类型，常用 `AIGC` |
 | `PageNumber` | number | 否 | 页码，从 1 开始 |
 | `PageSize` | number | 否 | 每页数量，默认 20 |
@@ -211,19 +206,15 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 }
 ```
 
-<Warning>
-  **暂不支持**：`asset://` 引用当前不可用（渠道升级期间），提交会返回 400。请一律使用公网 URL。
-</Warning>
-
 ## 常见问题
 
 **上传报 URL 无效？**
 
-换一张能公网直接打开的 `https` 链接；或改用 `Data` 字段直接传图片 base64，由平台自动转存，无需自备图床。
+换一张能公网直接打开的 `https` 链接；只有本地原图时先用 [CreateAssetUrl](#create-asset-url) 换成公网 URL。`Data`（base64）会原样转发上游，大文件更容易超时，建议只作兜底。
 
 **asset:// 图生报找不到素材？**
 
-确认 asset 由当前 Key 上传且素材组未解绑。可先改用公网图片链接验证流程。
+确认 asset 由当前**账号**创建（同账号下换 API Key 不影响）且素材组未解绑。可先改用公网图片链接验证流程。
 
 **字段名写错？**
 
