@@ -6,11 +6,27 @@ icon: "folder-kanban"
 api: "POST /v1/seedance/asset/CreateAssetGroup"
 ---
 
-素材管理共 **11 个端点**，均为 **POST** 请求。**不同账号之间的素材数据完全隔离**：同一账号下多把 API Key 共享同一份素材库，跨账号互不可见。
+素材管理共 **11 个端点**，均为 **POST** 请求，**全部可用**（素材库、`asset://` 引用与 `callback_url` 回调均已恢复）。**不同账号之间的素材数据完全隔离**：同一账号下多把 API Key 共享同一份素材库，跨账号互不可见。
 
 <Note>
   Base URL：`https://gogogotoken.com`。路径前缀：`/v1/seedance/asset/`。字段名注意大小写：`GroupId`、`Id`、`PageNumber`。
 </Note>
+
+## 接口列表
+
+| 接口 | 端点 | 说明 |
+| --- | --- | --- |
+| CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次） |
+| ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费） |
+| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
+| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
+| RegisterGroup | `POST /v1/seedance/asset/RegisterGroup` | 注册已有的真人素材组（免费） |
+| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
+| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
+| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
+| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
+| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
+| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
 
 ## 素材上传（CreateAssetUrl） {#create-asset-url}
 
@@ -129,22 +145,6 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListAssets \
 ```
 
 </RequestExample>
-
-## 接口列表
-
-| 接口 | 端点 | 说明 |
-| --- | --- | --- |
-| CreateAssetUrl | `POST /v1/seedance/asset/CreateAssetUrl` | 上传素材换公网 URL（¥0.10 / 次），**可用** |
-| ListMyUploads | `POST /v1/seedance/asset/ListMyUploads` | 查询本账号上传素材列表（免费），**可用** |
-| CreateAssetGroup | `POST /v1/seedance/asset/CreateAssetGroup` | 创建素材组（免费） |
-| CreateAsset | `POST /v1/seedance/asset/CreateAsset` | 登记素材（¥0.10 / 次） |
-| GetAssetGroup | `POST /v1/seedance/asset/GetAssetGroup` | 查询素材组 |
-| GetAsset | `POST /v1/seedance/asset/GetAsset` | 查询单个素材 |
-| ListAssetGroups | `POST /v1/seedance/asset/ListAssetGroups` | 分页列出素材组 |
-| ListAssets | `POST /v1/seedance/asset/ListAssets` | 分页列出素材 |
-| UpdateAssetGroup | `POST /v1/seedance/asset/UpdateAssetGroup` | 更新素材组 |
-| UpdateAsset | `POST /v1/seedance/asset/UpdateAsset` | 更新素材 |
-| RegisterGroup | `POST /v1/seedance/asset/RegisterGroup` | 注册已有的真人素材组（免费） |
 
 ## CreateAssetGroup
 
