@@ -159,10 +159,6 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
   }'
 ```
 
-<Note>
-  **暂不支持**：`asset://` 素材库引用当前不可用（渠道升级期间），提交会返回 400。请改用公网 URL——本地素材可通过 [素材上传（CreateAssetUrl）](/assets#create-asset-url) 获取公网 URL。
-</Note>
-
 使用 [素材管理](/assets) 登记的图片时，将 URL 换为 `asset://asset-xxx`（ID 格式以实际返回为准）：
 
 ```json
@@ -205,7 +201,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 | `metadata.content[].draft_task` | `content[].draft_task` | **仅 2.5**：样片模式 Step2 引用样片任务 ID（仅 1080p）；平台自动换算为上游任务号 |
 | `metadata.generate_audio` | `generate_audio` | 是否生成音频 |
 | `metadata.return_last_frame` | `return_last_frame` | 是否返回尾帧 |
-| `callback_url` | `callback_url` | 回调通知地址，原样透传。**暂不支持**，提交返回 400，请使用轮询 |
+| `callback_url` | `callback_url` | 回调通知地址。平台会中继上游回调并翻译任务 ID 后转发到该地址 |
 
 ## 样片模式（Draft，仅 Seedance 2.5） {#draft-mode}
 
@@ -278,11 +274,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 
 ## 回调通知（callback_url，免轮询）
 
-<Warning>
-  **暂不支持**：渠道升级期间回调通知暂不可用，传 `callback_url` 会返回 400。请使用 [任务查询](/video-tasks) 轮询获取结果。
-</Warning>
-
-提交任务时传入 `callback_url`，任务状态变化（排队 → 运行 → 成功/失败）时上游会主动向该地址 POST 推送任务结果，无需轮询。回调请求体的结构与 [任务查询](/video-tasks) 接口的返回一致（含 `id`、`status`、`content.video_url`、`usage` 等字段），与豆包官方行为对齐。
+提交任务时传入 `callback_url`，任务状态变化（排队 → 运行 → 成功/失败）时平台会向该地址 POST 推送任务结果，无需轮询。回调请求体的结构与 [任务查询](/video-tasks) 接口的返回一致（含 `id`、`status`、`content.video_url`、`usage` 等字段），与豆包官方行为对齐。
 
 ```bash
 curl -X POST https://gogogotoken.com/v1/video/generations \
@@ -299,7 +291,7 @@ curl -X POST https://gogogotoken.com/v1/video/generations \
 
 <Note>
   - 回调地址必须公网可达，并正常返回 2xx 响应。
-  - 回调由上游直接发送到你的服务器，不经过平台转发；推送体中的 `id` 是上游任务 ID（`cgt-` 前缀），与本接口提交响应中的 `task_id` 是同一任务。如需校验真伪，可用提交响应的 `task_id` 调 [任务查询](/video-tasks) 交叉核对状态。
+  - 回调由平台中继转发到你的服务器：推送体顶层的 `id` / `task_id` 就是本接口提交响应里的 `task_id`（`task_` 前缀），请求头另带 `X-Gotoken-Task-Id` / `X-Gotoken-Signature` / `X-Gotoken-Timestamp`，可用 `task_id` 调 [任务查询](/video-tasks) 交叉核对状态。
   - 回调与轮询可以混用，互不影响。
 </Note>
 
