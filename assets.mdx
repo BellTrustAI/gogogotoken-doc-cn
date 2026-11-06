@@ -51,20 +51,10 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
+    "GroupId": "group_xxx",
     "Name": "参考图1",
     "AssetType": "Image",
     "URL": "https://assets.example.com/photo.jpg"
-  }'
-```
-
-```bash 上传素材（本地原图 base64）
-curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAsset \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Name": "参考图1",
-    "AssetType": "Image",
-    "Data": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
   }'
 ```
 
@@ -95,8 +85,11 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `Name` | string | 否 | 素材组名称；不填由平台自动生成 |
+| `Name` | string | 否 | 素材组名称，**不超过 32 字符**；不填由平台自动生成 |
+| `GroupType` | string | 否 | `AIGC`（默认）或 `LivenessFace`（真人素材组）；**不填按 `AIGC` 创建** |
 | `Description` | string | 否 | 描述 |
+
+普通素材库无需传 `GroupType`；只有要建**真人素材组**时才需要传 `"GroupType": "LivenessFace"`，之后用 `RegisterGroup` 注册到上游。
 
 ## CreateAsset
 
@@ -104,15 +97,28 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `GroupId` | string | 否 | 所属素材组 ID；不填则由上游放入默认组 |
-| `Name` | string | 否 | 素材名称；不填由平台自动生成 |
-| `AssetType` | string | 是 | `Image` 或 `Video` |
-| `URL` | string | 二选一 | 公网 HTTPS 图片/视频地址（**推荐**） |
-| `Data` | string | 二选一 | 图片/视频的 base64 内容（可含 `data:` 前缀）。原样转发给上游，大文件建议改用 `URL` |
+| `GroupId` | string | **是** | 所属素材组 ID，必须是本账号名下的组（由 `CreateAssetGroup` 返回） |
+| `Name` | string | 否 | 素材名称，**不超过 32 字符**；不填由平台自动生成 |
+| `AssetType` | string | 是 | `Image`、`Video` 或 `Audio` |
+| `URL` | string | **是** | 公网 HTTPS 图片/视频/音频地址 |
 
 <Note>
-  `URL` 与 `Data` 二选一，**优先用 `URL`**：已有公网直链直接填；只有本地原图时可先用 [CreateAssetUrl](#create-asset-url) 换公网 URL，再走 `URL` 提交，比内联 base64 更稳。
+  **`GroupId` 与 `URL` 都是必填**：缺 `GroupId` 返回 `400 MissingParameter.GroupId`，缺 `URL` 返回 `400 MissingParameter.URL`。**不支持内联 base64**——只有本地文件时先用 [CreateAssetUrl](#create-asset-url) 换成公网 URL，再走 `URL` 提交。
 </Note>
+
+<Warning>
+  图片尺寸有下限：宽度须在 **300–6000 px** 之间，过小（例如 1×1 占位图）会返回 `400 InvalidParameter.WidthTooSmall`。
+</Warning>
+
+成功响应只返回素材 ID（字段名是大写 `Id`），其余字段请用 `GetAsset` 查询：
+
+```json
+{ "Id": "asset-20261106123456-a1b2c" }
+```
+
+`Name` 超长返回 `400 InvalidParameter.Name`：上游实际只接受约 56 字符（报错文案写的是 64，以实际行为为准），平台还会为本账号加用户前缀，所以按上表的 32 字符以内使用。
+
+成功后异步转存：刚创建时 `GetAsset` 的 `Status` 为 `Processing`、`URL` 为空；**要等 `Status` 变成 `Active` 之后**再在生成请求里引用 `asset://<Id>`，否则会返回 `400 InvalidParameter: The asset is still processing and is not available yet`。
 
 ## GetAsset
 
@@ -120,7 +126,7 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{ "Id": "asset_xxx" }'
+  -d '{ "Id": "asset-20261106123456-a1b2c" }'
 ```
 
 ## ListAssets
@@ -128,7 +134,20 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `Filter.GroupIds` | string[] | 否 | 素材组 ID 列表；不填返回本账号名下全部组，不属于本账号的组会被剔除 |
-| `Filter.GroupType` | string | 是 | 素材组类型，常用 `AIGC` |
+| `Filter.GroupType` | string | 否 | 素材组类型，常用 `AIGC`；不填不限类型 |
+| `PageNumber` | number | 否 | 页码，从 1 开始 |
+| `PageSize` | number | 否 | 每页数量，默认 20 |
+
+本账号还没有创建过素材组时返回空列表（`TotalCount: 0`、`Items: []`），不会报错。
+
+## ListAssetGroups
+
+分页列出本账号名下的素材组。只返回自己的组，不属于本账号的 `GroupIds` 会被剔除。
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `Filter.GroupType` | string | 否 | `AIGC` 或 `LivenessFace`；**不填时由平台补成 `AIGC` 再转发**，要查真人素材组请显式传 `LivenessFace` |
+| `Filter.GroupIds` | string[] | 否 | 只列指定组；不填列本账号名下全部组 |
 | `PageNumber` | number | 否 | 页码，从 1 开始 |
 | `PageSize` | number | 否 | 每页数量，默认 20 |
 
@@ -229,13 +248,29 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/ListMyUploads \
 
 ## 常见问题
 
-**上传报 URL 无效？**
+**上传报 `MissingParameter.GroupId` / `MissingParameter.URL`？**
 
-换一张能公网直接打开的 `https` 链接；只有本地原图时先用 [CreateAssetUrl](#create-asset-url) 换成公网 URL。`Data`（base64）会原样转发上游，大文件更容易超时，建议只作兜底。
+`CreateAsset` 两个字段都必填：`GroupId` 用 `CreateAssetGroup` 返回的 ID，`URL` 必须公网可访问。没有公网地址时先用 [CreateAssetUrl](#create-asset-url) 换成 URL。
+
+**传 base64（`Data`）报 `MissingParameter.URL`？**
+
+上游不支持内联 base64，只接受公网 `URL`。请改走 [CreateAssetUrl](#create-asset-url) → `CreateAsset` 两步。
+
+**上传报 `DownloadFailed`？**
+
+上游拉不到这个地址：防盗链、需登录、内网地址或临时链接已过期。换一条公网直链，或先用 [CreateAssetUrl](#create-asset-url) 转存。
+
+**上传报 `WidthTooSmall`？**
+
+图片宽度必须在 300–6000 px 之间，换一张尺寸正常的图。
+
+**asset:// 图生报 `The asset is still processing`？**
+
+素材还在转存，用 `GetAsset` 查到 `Status` 变为 `Active` 后再提交。
 
 **asset:// 图生报找不到素材？**
 
-确认 asset 由当前**账号**创建（同账号下换 API Key 不影响）且素材组未解绑。可先改用公网图片链接验证流程。
+确认 asset 由当前**账号**创建（同账号下换 API Key 不影响）、素材组未解绑，且素材 `Status` 已是 `Active`。可先改用公网图片链接验证流程。
 
 **字段名写错？**
 
