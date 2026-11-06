@@ -86,10 +86,10 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `Name` | string | 否 | 素材组名称，**不超过 32 字符**；不填由平台自动生成 |
-| `GroupType` | string | 否 | `AIGC`（默认）或 `LivenessFace`（真人素材组）；**不填按 `AIGC` 创建** |
+| `GroupType` | string | 否 | 目前只支持 `AIGC`（默认）；**不填按 `AIGC` 创建** |
 | `Description` | string | 否 | 描述 |
 
-普通素材库无需传 `GroupType`；只有要建**真人素材组**时才需要传 `"GroupType": "LivenessFace"`，之后用 `RegisterGroup` 注册到上游。
+当前上游只支持 `AIGC` 组：显式传 `"GroupType": "LivenessFace"` 会返回 `400 InvalidParameter.GroupType`（`Only AIGC group type is supported`）。因此真人素材组（`RegisterGroup` 的前提）暂时无法新建。
 
 ## CreateAsset
 
@@ -113,8 +113,14 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/CreateAssetGroup \
 成功响应只返回素材 ID（字段名是大写 `Id`），其余字段请用 `GetAsset` 查询：
 
 ```json
-{ "Id": "asset-20261106123456-a1b2c" }
+{
+  "code": "success",
+  "message": "",
+  "data": { "Id": "asset-20261106123456-a1b2c" }
+}
 ```
+
+素材接口的响应统一包在 `{ code, message, data }` 里：`code` 为 `success` 表示成功，真正的业务字段（`Id`、`Items`、`Status` 等）都在 `data` 内。错误时 `code` 为 `error`、`message` 写失败原因，HTTP 状态码仍是 200。
 
 `Name` 超长返回 `400 InvalidParameter.Name`：上游实际只接受约 56 字符（报错文案写的是 64，以实际行为为准），平台还会为本账号加用户前缀，所以按上表的 32 字符以内使用。
 
@@ -146,10 +152,14 @@ curl -X POST https://gogogotoken.com/v1/seedance/asset/GetAsset \
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `Filter.GroupType` | string | 否 | `AIGC` 或 `LivenessFace`；**不填时由平台补成 `AIGC` 再转发**，要查真人素材组请显式传 `LivenessFace` |
+| `Filter.GroupType` | string | 否 | 目前只支持 `AIGC`；**不填时由平台补成 `AIGC` 再转发** |
 | `Filter.GroupIds` | string[] | 否 | 只列指定组；不填列本账号名下全部组 |
 | `PageNumber` | number | 否 | 页码，从 1 开始 |
 | `PageSize` | number | 否 | 每页数量，默认 20 |
+
+<Warning>
+  **已知限制**：当前上游的 `ListAssetGroups` 一律返回空列表（`TotalCount: 0`、`Items: []`），即使素材组已创建成功、`GetAssetGroup` 能查到也一样。判断组是否存在请用 `GetAssetGroup`，列素材请用 `ListAssets`。
+</Warning>
 
 ## 素材上传（CreateAssetUrl） {#create-asset-url}
 
