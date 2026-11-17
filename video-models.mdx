@@ -5,7 +5,7 @@ description: "Seedance 2.0 / 2.5 视频生成模型与 CNY 计费方式概览"
 icon: "list-video"
 ---
 
-Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费。2.0 标准版支持 480p–4K；**2.5** 支持到 **1080p**（不含 4K）；2.0 fast / mini 最高仅 **720p**。
+Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实计费。2.0 标准版支持 480p–4K；**2.5** 支持到 **1080p**（不含 4K）；2.0 fast / mini 与 2.5 flash 最高仅 **720p**。
 
 <Note>
   本页仅覆盖 **Seedance（豆包）** 模型。可灵 **Kling** 视频（积分计费、`kling-v2-*` / `kling-v3`）见 [Kling 模型与计费](/kling-models)。
@@ -16,12 +16,13 @@ Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实�
 | 模型 | 说明 | 最高分辨率 | 时长 | 视频参考输入 |
 | --- | --- | --- | --- | --- |
 | `doubao-seedance-2-5` | Seedance 2.5，更长成片与更大素材容量；支持 `output_format` | 1080p | 4–30 秒或 `-1` | 支持 |
+| `doubao-seedance-2-5-flash` | Seedance 2.5 极速版，速度约 2 倍、单价更低；仅 480p / 720p | 720p | 4–30 秒 | 支持 |
 | `doubao-seedance-2-0` | ARK 原生旗舰模型，兼容 OpenAI Video API，任务完成后自动差额结算 | 4K | 常见 4–15 秒或 `-1` | 支持 |
 | `doubao-seedance-2-0-fast` | 更快、成本更低 | 720p | 同上 | 支持 |
 | `doubao-seedance-2-0-mini` | 轻量版，适合低成本预览与批量试片 | 720p | 同上 | 不支持 |
 
 <Warning>
-  Fast / Mini **只属于 2.0**。请勿提交 `doubao-seedance-2-5-fast` / `doubao-seedance-2-5-mini`——网关返回 **400** + `model_not_found`，**不会**静默回退到其他模型。当前 Key 可用模型以 [`GET /v1/models`](/auth#list-models) 为准。
+  Fast / Mini **只属于 2.0**，2.5 的极速版是 **`doubao-seedance-2-5-flash`**（仅 480p / 720p）。请勿提交 `doubao-seedance-2-5-fast` / `doubao-seedance-2-5-mini`——网关返回 **400** + `model_not_found`，**不会**静默回退到其他模型。当前 Key 可用模型以 [`GET /v1/models`](/auth#list-models) 为准。
 </Warning>
 
 ## 官方单价（CNY / 百万 output tokens）
@@ -41,6 +42,18 @@ Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实�
 
 <Note>
   限时促销对齐官方，具体以控制台账单为准。
+</Note>
+
+### `doubao-seedance-2-5-flash`
+
+仅 **480p / 720p**（不支持 1080p / 4k，传会被服务端拒绝）。统一单价，**不区分是否含视频输入**：
+
+| 场景 | CNY / 百万 tokens |
+| --- | --- |
+| 全部场景（文生 / 图生 / 视频参考） | ¥46 |
+
+<Note>
+  Flash 的素材上限比 2.5 小：单次约 **图片 ≤10 / 视频 ≤5 / 音频 ≤5**。时长 4–30 秒整数（默认 5 秒），不支持 `-1`。用法、参数与 `doubao-seedance-2-5` 完全一致，只改 `model` 即可切换。
 </Note>
 
 ### `doubao-seedance-2-0`
@@ -86,7 +99,7 @@ Seedance 视频生成接口提供 ARK 原生模型，按**输出 token** 据实�
 ```
 
 <Note>
-  分辨率须使用官方枚举。`doubao-seedance-2-0` 支持 `480p` / `720p` / `1080p` / `4k`；`doubao-seedance-2-5` 支持 `480p` / `720p` / `1080p`（不含 `4k`）；`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 仅 `480p` / `720p`。优先级：`metadata.resolution` → `size` → 默认 `720p`。传像素串（如 `1280x720`）会返回 `400 invalid_resolution`。画幅用 `metadata.ratio` 指定。
+  分辨率须使用官方枚举。`doubao-seedance-2-0` 支持 `480p` / `720p` / `1080p` / `4k`；`doubao-seedance-2-5` 支持 `480p` / `720p` / `1080p`（不含 `4k`）；`doubao-seedance-2-5-flash`、`doubao-seedance-2-0-fast`、`doubao-seedance-2-0-mini` 仅 `480p` / `720p`。优先级：`metadata.resolution` → `size` → 默认 `720p`。传像素串（如 `1280x720`）会返回 `400 invalid_resolution`。画幅用 `metadata.ratio` 指定。
 </Note>
 
 ## 任务模式
